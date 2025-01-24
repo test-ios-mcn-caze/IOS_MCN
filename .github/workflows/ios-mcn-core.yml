@@ -84,7 +84,7 @@ jobs:
           for PACKAGE in "${!CORE_PACKAGES[@]}"; do
             VERSION=${CORE_PACKAGES[$PACKAGE]}
             SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
-            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/ios_mcn/${PACKAGE}:${VERSION}"  # Repository names in lowercase
+            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/${PACKAGE}:${VERSION}"  # Repository names in lowercase
             echo "Pulling ${SOURCE_IMAGE}..."
             docker pull ${SOURCE_IMAGE}
             echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
