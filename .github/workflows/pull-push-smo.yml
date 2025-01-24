@@ -58,12 +58,15 @@ jobs:
             exit 1
           fi
 
+          # Convert repository name to lowercase
+          TARGET_REPO="ghcr.io/test-ios-mcn-caze/ios_mcn"
+
           # Loop through each package and version, then pull, retag, and push
           for i in "${!SMO_PACKAGES[@]}"; do
             PACKAGE="${SMO_PACKAGES[$i]}"
             VERSION="${VERSIONS[$i]}"
             SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${VERSION}"
-            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${VERSION}-updated"
+            TARGET_IMAGE="${TARGET_REPO}/${PACKAGE}:${VERSION}-updated"
             echo "Processing ${PACKAGE} with version ${VERSION}..."
 
             # Pull the source image
