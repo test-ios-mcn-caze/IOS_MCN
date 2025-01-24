@@ -1,0 +1,113 @@
+name: Pull, Retag, and Push Docker Images from ios-mcn-smo
+
+on:
+  workflow_dispatch:
+    inputs:
+      nonrtric_plt_a1policymanagementservice_version:
+        description: 'Version tag for nonrtric-plt-a1policymanagementservice (ios-mcn-smo)'
+        required: true
+        default: 'v2.8.1'
+      nonrtric_plt_rappcatalogue_version:
+        description: 'Version tag for nonrtric-plt-rappcatalogue (ios-mcn-smo)'
+        required: true
+        default: 'v2.8.1'
+      nonrtric_plt_informationcoordinatorservice_version:
+        description: 'Version tag for nonrtric-plt-informationcoordinatorservice (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.5'
+      nonrtric_plt_pmproducer_version:
+        description: 'Version tag for nonrtric-plt-pmproducer (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.5'
+      nonrtric_plt_pmlog_version:
+        description: 'Version tag for nonrtric-plt-pmlog (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.5'
+      nonrtric_plt_dmaapadapter_version:
+        description: 'Version tag for nonrtric-plt-dmaapadapter (ios-mcn-smo)'
+        required: true
+        default: 'v2.8.1'
+      ves_collector_version:
+        description: 'Version tag for ves-collector (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      pm_file_converter_version:
+        description: 'Version tag for pm-file-converter (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      nonrtric_gateway_version:
+        description: 'Version tag for nonrtric-gateway (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      nonrtric_controlpanel_version:
+        description: 'Version tag for nonrtric-controlpanel (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      nonrtric_plt_auth_token_fetch_version:
+        description: 'Version tag for nonrtric-plt-auth-token-fetch (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      sdnc_web_image_version:
+        description: 'Version tag for sdnc-web-image (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      sdnc_image_version:
+        description: 'Version tag for sdnc-image (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+
+jobs:
+  pull_and_push_ios_mcn_smo:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the current repository (if needed)
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      # Step 1: Pull, Retag, and Push all Images from ios-mcn-smo
+      - name: Pull, Retag, and Push all Images from ios-mcn-smo
+        run: |
+          # Define the list of packages and their versions for ios-mcn-smo
+          declare -A SMO_PACKAGES
+          SMO_PACKAGES=(
+            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric_plt_a1policymanagementservice_version }}"
+            ["nonrtric-plt-rappcatalogue"]="${{ github.event.inputs.nonrtric_plt_rappcatalogue_version }}"
+            ["nonrtric-plt-informationcoordinatorservice"]="${{ github.event.inputs.nonrtric_plt_informationcoordinatorservice_version }}"
+            ["nonrtric-plt-pmproducer"]="${{ github.event.inputs.nonrtric_plt_pmproducer_version }}"
+            ["nonrtric-plt-pmlog"]="${{ github.event.inputs.nonrtric_plt_pmlog_version }}"
+            ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric_plt_dmaapadapter_version }}"
+            ["ves-collector"]="${{ github.event.inputs.ves_collector_version }}"
+            ["pm-file-converter"]="${{ github.event.inputs.pm_file_converter_version }}"
+            ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric_gateway_version }}"
+            ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric_controlpanel_version }}"
+            ["nonrtric-plt-auth-token-fetch"]="${{ github.event.inputs.nonrtric_plt_auth_token_fetch_version }}"
+            ["sdnc-web-image"]="${{ github.event.inputs.sdnc_web_image_version }}"
+            ["sdnc-image"]="${{ github.event.inputs.sdnc_image_version }}"
+          )
+
+          # Loop through each package and perform pull, retag, and push
+          for PACKAGE in "${!SMO_PACKAGES[@]}"; do
+            VERSION=${SMO_PACKAGES[$PACKAGE]}
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${VERSION}"
+            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${VERSION}-updated"
+
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+          done
