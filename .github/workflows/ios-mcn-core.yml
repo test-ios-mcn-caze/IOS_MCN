@@ -79,13 +79,12 @@ jobs:
             ["5gc-metricfunction"]="${{ github.event.inputs.metricfunction_version }}"
             ["5gc-ausf"]="${{ github.event.inputs.ausf_version }}"
           )
-
+          
           # Loop through each package and perform pull, retag, and push
           for PACKAGE in "${!CORE_PACKAGES[@]}"; do
             VERSION=${CORE_PACKAGES[$PACKAGE]}
             SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
-            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${VERSION}-updated"
-
+            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/ios_mcn/${PACKAGE}:${VERSION}-updated"  # Repository names in lowercase
             echo "Pulling ${SOURCE_IMAGE}..."
             docker pull ${SOURCE_IMAGE}
             echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
