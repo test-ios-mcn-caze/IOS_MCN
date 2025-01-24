@@ -1,0 +1,68 @@
+name: Pull, Retag, and Push All Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag for all images (e.g., v0.0.10)'
+        required: true
+        default: 'v0.0.10'
+
+jobs:
+  pull_and_push_images:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the current repository (if needed)
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      # Step 1: Pull, Retag, and Push all Images from ios-mcn-core
+      - name: Pull, Retag, and Push all Images from ios-mcn-core
+        run: |
+          # Define the list of packages in ios-mcn-core
+          CORE_PACKAGES=("amf" "smf" "pcf" "nrf" "udm" "udr" "nssf" "webconsole" "metricfunction" "ausf")
+
+          # Loop through each package and perform pull, retag, and push
+          for PACKAGE in "${CORE_PACKAGES[@]}"; do
+            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${{ github.event.inputs.version }}"
+            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${{ github.event.inputs.version }}-updated"
+
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+          done
+
+      # Step 2: Pull, Retag, and Push all Images from ios-mcn-smo
+      - name: Pull, Retag, and Push all Images from ios-mcn-smo
+        run: |
+          # Define the list of packages in ios-mcn-smo
+          SMO_PACKAGES=("nonrtric-plt-a1policymanagementservice" "nonrtric-plt-rappcatalogue" "nonrtric-plt-informationcoordinatorservice" "nonrtric-plt-pmproducer" "nonrtric-plt-pmlog" "nonrtric-plt-dmaapadapter" "ves-collector" "pm-file-converter" "nonrtric-gateway" "nonrtric-controlpanel" "nonrtric-plt-auth-token-fetch" "sdnc-web-image" "sdnc-image")
+
+          # Loop through each package and perform pull, retag, and push
+          for PACKAGE in "${SMO_PACKAGES[@]}"; do
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${{ github.event.inputs.version }}"
+            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${{ github.event.inputs.version }}-updated"
+
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+          done
