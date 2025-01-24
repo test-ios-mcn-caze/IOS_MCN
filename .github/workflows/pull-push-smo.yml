@@ -6,7 +6,7 @@ on:
       smo_version:
         description: 'Comma-separated versions for the ios-mcn-smo packages'
         required: true
-        default: 'v2.8.1,v2.8.1,v0.0.5,v0.0.5,v0.0.5,v2.8.1,v0.0.4,v0.0.4,v0.0.4,v0.0.4,v0.0.4,v0.0.4,v0.0.4,v0.0.4'
+        default: '2.8.1,1.2.0,1.5.0,1.0.1,1.0.0,1.4.0,1.12.3,latest,1.2.0,2.5.0,1.1.1,latest,latest'
 
 jobs:
   pull_and_push_ios_mcn_smo:
@@ -52,17 +52,27 @@ jobs:
             "sdnc-image"
           )
 
+          # Check if the number of versions matches the number of packages
+          if [ "${#VERSIONS[@]}" -ne "${#SMO_PACKAGES[@]}" ]; then
+            echo "Error: The number of versions provided (${#VERSIONS[@]}) does not match the number of packages (${#SMO_PACKAGES[@]})."
+            exit 1
+          fi
+
           # Loop through each package and version, then pull, retag, and push
           for i in "${!SMO_PACKAGES[@]}"; do
             PACKAGE="${SMO_PACKAGES[$i]}"
             VERSION="${VERSIONS[$i]}"
             SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${VERSION}"
             TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${VERSION}-updated"
+            echo "Processing ${PACKAGE} with version ${VERSION}..."
 
-            echo "Pulling ${SOURCE_IMAGE}..."
-            docker pull ${SOURCE_IMAGE}
-            echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
+            # Pull the source image
+            if ! docker pull ${SOURCE_IMAGE}; then
+              echo "Warning: Failed to pull ${SOURCE_IMAGE}. Skipping..."
+              continue
+            fi
+
+            # Retag and push the target image
             docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
-            echo "Pushing ${TARGET_IMAGE}..."
             docker push ${TARGET_IMAGE}
           done
