@@ -1,40 +1,106 @@
-name: Pull, Retag, and Push Docker Images with Different Versions
+name: Pull, Retag, and Push Docker Images from ios-mcn-core and ios-mcn-smo
 
 on:
   workflow_dispatch:
     inputs:
+      # Version tags for ios-mcn-core
       amf_version:
-        description: 'Version tag for AMF (e.g., v0.0.10)'
+        description: 'Version tag for AMF (ios-mcn-core)'
         required: true
         default: 'v0.0.10'
       smf_version:
-        description: 'Version tag for SMF (e.g., v0.0.6)'
+        description: 'Version tag for SMF (ios-mcn-core)'
         required: true
         default: 'v0.0.6'
       pcf_version:
-        description: 'Version tag for PCF (e.g., v0.0.4)'
+        description: 'Version tag for PCF (ios-mcn-core)'
         required: true
         default: 'v0.0.4'
       nrf_version:
-        description: 'Version tag for NRF (e.g., v0.0.5)'
+        description: 'Version tag for NRF (ios-mcn-core)'
         required: true
         default: 'v0.0.5'
       udm_version:
-        description: 'Version tag for UDM (e.g., v0.0.4)'
+        description: 'Version tag for UDM (ios-mcn-core)'
         required: true
         default: 'v0.0.4'
-      # Add other versions for each package
-      smf_version:
-        description: 'Version tag for SMF (e.g., v0.0.6)'
+      udr_version:
+        description: 'Version tag for UDR (ios-mcn-core)'
         required: true
-        default: 'v0.0.6'
-      nonrtric_plt_a1_version:
-        description: 'Version tag for nonrtric-plt-a1policymanagementservice (e.g., v2.8.1)'
+        default: 'v0.0.4'
+      nssf_version:
+        description: 'Version tag for NSSF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      webconsole_version:
+        description: 'Version tag for Webconsole (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      metricfunction_version:
+        description: 'Version tag for Metric Function (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      ausf_version:
+        description: 'Version tag for AUSF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+
+      # Version tags for ios-mcn-smo
+      nonrtric_plt_a1policymanagementservice_version:
+        description: 'Version tag for nonrtric-plt-a1policymanagementservice (ios-mcn-smo)'
         required: true
         default: 'v2.8.1'
+      nonrtric_plt_rappcatalogue_version:
+        description: 'Version tag for nonrtric-plt-rappcatalogue (ios-mcn-smo)'
+        required: true
+        default: 'v2.8.1'
+      nonrtric_plt_informationcoordinatorservice_version:
+        description: 'Version tag for nonrtric-plt-informationcoordinatorservice (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.5'
+      nonrtric_plt_pmproducer_version:
+        description: 'Version tag for nonrtric-plt-pmproducer (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.5'
+      nonrtric_plt_pmlog_version:
+        description: 'Version tag for nonrtric-plt-pmlog (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.5'
+      nonrtric_plt_dmaapadapter_version:
+        description: 'Version tag for nonrtric-plt-dmaapadapter (ios-mcn-smo)'
+        required: true
+        default: 'v2.8.1'
+      ves_collector_version:
+        description: 'Version tag for ves-collector (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      pm_file_converter_version:
+        description: 'Version tag for pm-file-converter (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      nonrtric_gateway_version:
+        description: 'Version tag for nonrtric-gateway (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      nonrtric_controlpanel_version:
+        description: 'Version tag for nonrtric-controlpanel (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      nonrtric_plt_auth_token_fetch_version:
+        description: 'Version tag for nonrtric-plt-auth-token-fetch (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      sdnc_web_image_version:
+        description: 'Version tag for sdnc-web-image (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
+      sdnc_image_version:
+        description: 'Version tag for sdnc-image (ios-mcn-smo)'
+        required: true
+        default: 'v0.0.4'
 
 jobs:
-  pull_and_push_images:
+  pull_and_push_ios_mcn_core:
     runs-on: ubuntu-latest
 
     steps:
@@ -57,7 +123,7 @@ jobs:
       # Step 1: Pull, Retag, and Push all Images from ios-mcn-core
       - name: Pull, Retag, and Push all Images from ios-mcn-core
         run: |
-          # Define the list of packages and their respective versions for ios-mcn-core
+          # Define the list of packages and their versions for ios-mcn-core
           declare -A CORE_PACKAGES
           CORE_PACKAGES=(
             ["amf"]="${{ github.event.inputs.amf_version }}"
@@ -65,11 +131,11 @@ jobs:
             ["pcf"]="${{ github.event.inputs.pcf_version }}"
             ["nrf"]="${{ github.event.inputs.nrf_version }}"
             ["udm"]="${{ github.event.inputs.udm_version }}"
-            ["udr"]="v0.0.4"
-            ["nssf"]="v0.0.4"
-            ["webconsole"]="v0.0.4"
-            ["metricfunction"]="v0.0.4"
-            ["ausf"]="v0.0.4"
+            ["udr"]="${{ github.event.inputs.udr_version }}"
+            ["nssf"]="${{ github.event.inputs.nssf_version }}"
+            ["webconsole"]="${{ github.event.inputs.webconsole_version }}"
+            ["metricfunction"]="${{ github.event.inputs.metricfunction_version }}"
+            ["ausf"]="${{ github.event.inputs.ausf_version }}"
           )
 
           # Loop through each package and perform pull, retag, and push
@@ -86,25 +152,46 @@ jobs:
             docker push ${TARGET_IMAGE}
           done
 
+  pull_and_push_ios_mcn_smo:
+    runs-on: ubuntu-latest
+    needs: pull_and_push_ios_mcn_core  # Ensure ios-mcn-core is processed first
+
+    steps:
+      # Checkout the current repository (if needed)
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
       # Step 2: Pull, Retag, and Push all Images from ios-mcn-smo
       - name: Pull, Retag, and Push all Images from ios-mcn-smo
         run: |
-          # Define the list of packages and their respective versions for ios-mcn-smo
+          # Define the list of packages and their versions for ios-mcn-smo
           declare -A SMO_PACKAGES
           SMO_PACKAGES=(
-            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric_plt_a1_version }}"
-            ["nonrtric-plt-rappcatalogue"]="v2.8.1"
-            ["nonrtric-plt-informationcoordinatorservice"]="v0.0.5"
-            ["nonrtric-plt-pmproducer"]="v0.0.5"
-            ["nonrtric-plt-pmlog"]="v0.0.5"
-            ["nonrtric-plt-dmaapadapter"]="v2.8.1"
-            ["ves-collector"]="v0.0.4"
-            ["pm-file-converter"]="v0.0.4"
-            ["nonrtric-gateway"]="v0.0.4"
-            ["nonrtric-controlpanel"]="v0.0.4"
-            ["nonrtric-plt-auth-token-fetch"]="v0.0.4"
-            ["sdnc-web-image"]="v0.0.4"
-            ["sdnc-image"]="v0.0.4"
+            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric_plt_a1policymanagementservice_version }}"
+            ["nonrtric-plt-rappcatalogue"]="${{ github.event.inputs.nonrtric_plt_rappcatalogue_version }}"
+            ["nonrtric-plt-informationcoordinatorservice"]="${{ github.event.inputs.nonrtric_plt_informationcoordinatorservice_version }}"
+            ["nonrtric-plt-pmproducer"]="${{ github.event.inputs.nonrtric_plt_pmproducer_version }}"
+            ["nonrtric-plt-pmlog"]="${{ github.event.inputs.nonrtric_plt_pmlog_version }}"
+            ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric_plt_dmaapadapter_version }}"
+            ["ves-collector"]="${{ github.event.inputs.ves_collector_version }}"
+            ["pm-file-converter"]="${{ github.event.inputs.pm_file_converter_version }}"
+            ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric_gateway_version }}"
+            ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric_controlpanel_version }}"
+            ["nonrtric-plt-auth-token-fetch"]="${{ github.event.inputs.nonrtric_plt_auth_token_fetch_version }}"
+            ["sdnc-web-image"]="${{ github.event.inputs.sdnc_web_image_version }}"
+            ["sdnc-image"]="${{ github.event.inputs.sdnc_image_version }}"
           )
 
           # Loop through each package and perform pull, retag, and push
