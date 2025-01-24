@@ -35,7 +35,7 @@ on:
         description: 'Version tag for Webconsole (e.g., release-0.0.4)'
         required: true
         default: 'release-0.0.4'
-      metricfunction_version:
+      metricfunc_version:
         description: 'Version tag for Metric Function (e.g., release-0.0.4)'
         required: true
         default: 'release-0.0.4'
@@ -76,7 +76,7 @@ jobs:
             ["5gc-udr"]="${{ github.event.inputs.udr_version }}"
             ["5gc-nssf"]="${{ github.event.inputs.nssf_version }}"
             ["5gc-webui"]="${{ github.event.inputs.webui_version }}"
-            ["5gc-metricfunction"]="${{ github.event.inputs.metricfunction_version }}"
+            ["5gc-metricfunc"]="${{ github.event.inputs.metricfunc_version }}"
             ["5gc-ausf"]="${{ github.event.inputs.ausf_version }}"
           )
           
