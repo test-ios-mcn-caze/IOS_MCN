@@ -1,0 +1,98 @@
+name: Pull, Retag, and Push Docker Images from ios-mcn-core
+
+on:
+  workflow_dispatch:
+    inputs:
+      amf_version:
+        description: 'Version tag for AMF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.10'
+      smf_version:
+        description: 'Version tag for SMF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.6'
+      pcf_version:
+        description: 'Version tag for PCF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      nrf_version:
+        description: 'Version tag for NRF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.5'
+      udm_version:
+        description: 'Version tag for UDM (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      udr_version:
+        description: 'Version tag for UDR (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      nssf_version:
+        description: 'Version tag for NSSF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      webconsole_version:
+        description: 'Version tag for Webconsole (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      metricfunction_version:
+        description: 'Version tag for Metric Function (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+      ausf_version:
+        description: 'Version tag for AUSF (ios-mcn-core)'
+        required: true
+        default: 'v0.0.4'
+
+jobs:
+  pull_and_push_ios_mcn_core:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the current repository (if needed)
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Set up Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      # Step 1: Pull, Retag, and Push all Images from ios-mcn-core
+      - name: Pull, Retag, and Push all Images from ios-mcn-core
+        run: |
+          # Define the list of packages and their versions for ios-mcn-core
+          declare -A CORE_PACKAGES
+          CORE_PACKAGES=(
+            ["amf"]="${{ github.event.inputs.amf_version }}"
+            ["smf"]="${{ github.event.inputs.smf_version }}"
+            ["pcf"]="${{ github.event.inputs.pcf_version }}"
+            ["nrf"]="${{ github.event.inputs.nrf_version }}"
+            ["udm"]="${{ github.event.inputs.udm_version }}"
+            ["udr"]="${{ github.event.inputs.udr_version }}"
+            ["nssf"]="${{ github.event.inputs.nssf_version }}"
+            ["webconsole"]="${{ github.event.inputs.webconsole_version }}"
+            ["metricfunction"]="${{ github.event.inputs.metricfunction_version }}"
+            ["ausf"]="${{ github.event.inputs.ausf_version }}"
+          )
+
+          # Loop through each package and perform pull, retag, and push
+          for PACKAGE in "${!CORE_PACKAGES[@]}"; do
+            VERSION=${CORE_PACKAGES[$PACKAGE]}
+            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
+            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${VERSION}-updated"
+
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+          done
