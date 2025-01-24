@@ -76,7 +76,7 @@ jobs:
             ["5gc-udr"]="${{ github.event.inputs.udr_version }}"
             ["5gc-nssf"]="${{ github.event.inputs.nssf_version }}"
             ["5gc-webui"]="${{ github.event.inputs.webui_version }}"
-            ["5gc-metricfunc"]="${{ github.event.inputs.metricfunc_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_version }}"
             ["5gc-ausf"]="${{ github.event.inputs.ausf_version }}"
           )
           
