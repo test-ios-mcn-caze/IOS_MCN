@@ -1,0 +1,90 @@
+name: Pull and Push Images from ios-mcn-core
+
+on:
+  workflow_dispatch:
+    inputs:
+      amf_version:
+        description: 'Version tag for AMF (e.g., release-0.0.10)'
+        required: true
+        default: 'release-0.0.10'
+      smf_version:
+        description: 'Version tag for SMF (e.g., release-0.0.6)'
+        required: true
+        default: 'release-0.0.6'
+      pcf_version:
+        description: 'Version tag for PCF (e.g., release-0.0.4)'
+        required: true
+        default: 'release-0.0.4'
+      nrf_version:
+        description: 'Version tag for NRF (e.g., release-0.0.5)'
+        required: true
+        default: 'release-0.0.5'
+      udm_version:
+        description: 'Version tag for UDM (e.g., release-0.0.4)'
+        required: true
+        default: 'release-0.0.4'
+      udr_version:
+        description: 'Version tag for UDR (e.g., release-0.0.4)'
+        required: true
+        default: 'release-0.0.4'
+      nssf_version:
+        description: 'Version tag for NSSF (e.g., release-0.0.4)'
+        required: true
+        default: 'release-0.0.4'
+      webui_version:
+        description: 'Version tag for Webconsole (e.g., release-0.0.4)'
+        required: true
+        default: 'release-0.0.4'
+      metricfunc_version:
+        description: 'Version tag for Metric Function (e.g., release-0.0.4)'
+        required: true
+        default: 'release-0.0.4'
+      ausf_version:
+        description: 'Version tag for AUSF (e.g., release-0.0.4)'
+        required: true
+        default: 'release-0.0.4'
+
+jobs:
+  pull_and_push_images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+     
+      - name: Pull and Push all Images from ios-mcn-core
+        run: |
+          # Define the list of packages and their versions for ios-mcn-core
+          declare -A CORE_PACKAGES
+          CORE_PACKAGES=(
+            ["5gc-amf"]="${{ github.event.inputs.amf_version }}"
+            ["5gc-smf"]="${{ github.event.inputs.smf_version }}"
+            ["5gc-pcf"]="${{ github.event.inputs.pcf_version }}"
+            ["5gc-nrf"]="${{ github.event.inputs.nrf_version }}"
+            ["5gc-udm"]="${{ github.event.inputs.udm_version }}"
+            ["5gc-udr"]="${{ github.event.inputs.udr_version }}"
+            ["5gc-nssf"]="${{ github.event.inputs.nssf_version }}"
+            ["5gc-webui"]="${{ github.event.inputs.webui_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_version }}"
+            ["5gc-ausf"]="${{ github.event.inputs.ausf_version }}"
+          )
+          
+          
+          for PACKAGE in "${!CORE_PACKAGES[@]}"; do
+            VERSION=${CORE_PACKAGES[$PACKAGE]}
+            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            docker push ${SOURCE_IMAGE}
+          done
