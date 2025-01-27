@@ -62,12 +62,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-     
-      - name: Pull and Push all Images from ios-mcn-core
+      - name: Pull and Push Docker Images
         run: |
-          # Define the list of packages and their versions for ios-mcn-core
-          declare -A CORE_PACKAGES
-          CORE_PACKAGES=(
+          declare -A CORE_PACKAGES=(
             ["5gc-amf"]="${{ github.event.inputs.amf_version }}"
             ["5gc-smf"]="${{ github.event.inputs.smf_version }}"
             ["5gc-pcf"]="${{ github.event.inputs.pcf_version }}"
@@ -79,12 +76,12 @@ jobs:
             ["metricfunc"]="${{ github.event.inputs.metricfunc_version }}"
             ["5gc-ausf"]="${{ github.event.inputs.ausf_version }}"
           )
-          
-          
+
           for PACKAGE in "${!CORE_PACKAGES[@]}"; do
             VERSION=${CORE_PACKAGES[$PACKAGE]}
             SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
             echo "Pulling ${SOURCE_IMAGE}..."
             docker pull ${SOURCE_IMAGE}
+            echo "Pushing ${SOURCE_IMAGE}..."
             docker push ${SOURCE_IMAGE}
           done
