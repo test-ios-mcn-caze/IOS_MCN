@@ -47,52 +47,6 @@ on:
         description: 'Target Version for UDM'
         required: true
         default: 'v1.1.0'
-      
-      udr_source_version:
-        description: 'Source Version for UDR'
-        required: true
-        default: 'release-0.0.4'
-      udr_target_version:
-        description: 'Target Version for UDR'
-        required: true
-        default: 'v1.3.0'
-      
-      nssf_source_version:
-        description: 'Source Version for NSSF'
-        required: true
-        default: 'release-0.0.4'
-      nssf_target_version:
-        description: 'Target Version for NSSF'
-        required: true
-        default: 'v1.0.1'
-      
-      webui_source_version:
-        description: 'Source Version for Webconsole'
-        required: true
-        default: 'release-0.0.4'
-      webui_target_version:
-        description: 'Target Version for Webconsole'
-        required: true
-        default: 'v2.1.0'
-      
-      metricfunc_source_version:
-        description: 'Source Version for Metric Function'
-        required: true
-        default: 'release-0.0.4'
-      metricfunc_target_version:
-        description: 'Target Version for Metric Function'
-        required: true
-        default: 'v1.4.0'
-      
-      ausf_source_version:
-        description: 'Source Version for AUSF'
-        required: true
-        default: 'release-0.0.4'
-      ausf_target_version:
-        description: 'Target Version for AUSF'
-        required: true
-        default: 'v1.6.0'
-
 jobs:
   pull_and_push_images:
     runs-on: ubuntu-latest
@@ -119,11 +73,7 @@ jobs:
             ["5gc-pcf"]="${{ github.event.inputs.pcf_source_version }}"
             ["5gc-nrf"]="${{ github.event.inputs.nrf_source_version }}"
             ["5gc-udm"]="${{ github.event.inputs.udm_source_version }}"
-            ["5gc-udr"]="${{ github.event.inputs.udr_source_version }}"
-            ["5gc-nssf"]="${{ github.event.inputs.nssf_source_version }}"
-            ["5gc-webui"]="${{ github.event.inputs.webui_source_version }}"
-            ["metricfunc"]="${{ github.event.inputs.metricfunc_source_version }}"
-            ["5gc-ausf"]="${{ github.event.inputs.ausf_source_version }}"
+            
           )
           
           declare -A TARGET_VERSIONS=(
@@ -132,11 +82,7 @@ jobs:
             ["5gc-pcf"]="${{ github.event.inputs.pcf_target_version }}"
             ["5gc-nrf"]="${{ github.event.inputs.nrf_target_version }}"
             ["5gc-udm"]="${{ github.event.inputs.udm_target_version }}"
-            ["5gc-udr"]="${{ github.event.inputs.udr_target_version }}"
-            ["5gc-nssf"]="${{ github.event.inputs.nssf_target_version }}"
-            ["5gc-webui"]="${{ github.event.inputs.webui_target_version }}"
-            ["metricfunc"]="${{ github.event.inputs.metricfunc_target_version }}"
-            ["5gc-ausf"]="${{ github.event.inputs.ausf_target_version }}"
+            
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
