@@ -76,7 +76,10 @@ jobs:
       - name: Fetch Package Names and Count for ios-mcn-core
         run: |
           echo "Fetching packages for ios-mcn-core..."
-          curl -s "https://api.github.com/orgs/ios-mcn-core/packages" | jq -r '.[].name' > ios-mcn-core-packages.txt
+          RESPONSE=$(curl -s "https://api.github.com/orgs/ios-mcn-core/packages")
+          echo "API Response:"
+          echo "$RESPONSE"  # Print the full API response for debugging
+          echo "$RESPONSE" | jq -r '.[].name' > ios-mcn-core-packages.txt
           TOTAL_IOS_MC_CORE=$(wc -l < ios-mcn-core-packages.txt)
           echo "Total packages in ios-mcn-core: $TOTAL_IOS_MC_CORE"
           cat ios-mcn-core-packages.txt
