@@ -4,43 +4,43 @@ on:
   workflow_dispatch:
     inputs:
       udr_source_version:
-        description: 'Source Version for AMF (e.g., release-0.0.10)'
+        description: 'Source Version for UDR'
         required: true
         default: 'release-0.0.4'
       udr_target_version:
-        description: 'Target Version for AMF (e.g., v1.0.0)'
+        description: 'Target Version for UDR'
         required: true
         default: 'release-0.0.4'
       nssf_source_version:
-        description: 'Source Version for SMF'
+        description: 'Source Version for NSSF'
         required: true
         default: 'release-0.0.4'
       nssf_target_version:
-        description: 'Target Version for SMF'
+        description: 'Target Version for NSSF'
         required: true
         default: 'release-0.0.4'
       webui_source_version:
-        description: 'Source Version for PCF'
+        description: 'Source Version for WEBUI'
         required: true
         default: 'release-0.0.4'
       webui_target_version:
-        description: 'Target Version for PCF'
+        description: 'Target Version for WEBUI'
         required: true
         default: 'release-0.0.4'
       metricfunc_source_version:
-        description: 'Source Version for NRF'
+        description: 'Source Version for METRICFUNC'
         required: true
         default: 'release-0.0.4'
       metricfunc_target_version:
-        description: 'Target Version for NRF'
+        description: 'Target Version for METRICFUNC'
         required: true
         default: 'release-0.0.4'
       ausf_source_version:
-        description: 'Source Version for UDM'
+        description: 'Source Version for AUSF'
         required: true
         default: 'release-0.0.4'
       ausf_target_version:
-        description: 'Target Version for UDM'
+        description: 'Target Version for AUSF'
         required: true
         default: 'release-0.0.4'
 
