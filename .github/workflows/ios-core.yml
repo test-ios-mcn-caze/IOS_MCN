@@ -1,8 +1,8 @@
-name: Pull, Retag, Compare, and Push Images
+name: Pull, Retag, Compare, and Push Docker Images
+
 on:
   workflow_dispatch:
     inputs:
-      # Source and target versions for each package
       amf_source_version:
         description: 'Source Version for AMF (e.g., release-0.0.10)'
         required: true
@@ -10,8 +10,7 @@ on:
       amf_target_version:
         description: 'Target Version for AMF (e.g., v1.0.0)'
         required: true
-        default: 'v1.0.0'
-      
+        default: 'v1.2.33'
       smf_source_version:
         description: 'Source Version for SMF'
         required: true
@@ -19,8 +18,7 @@ on:
       smf_target_version:
         description: 'Target Version for SMF'
         required: true
-        default: 'v2.0.0'
-      
+        default: 'v2.2.25'
       pcf_source_version:
         description: 'Source Version for PCF'
         required: true
@@ -28,8 +26,7 @@ on:
       pcf_target_version:
         description: 'Target Version for PCF'
         required: true
-        default: 'v1.5.0'
-      
+        default: 'v1.5.51'
       nrf_source_version:
         description: 'Source Version for NRF'
         required: true
@@ -37,8 +34,7 @@ on:
       nrf_target_version:
         description: 'Target Version for NRF'
         required: true
-        default: 'v1.2.0'
-      
+        default: 'v1.2.26'
       udm_source_version:
         description: 'Source Version for UDM'
         required: true
@@ -46,12 +42,13 @@ on:
       udm_target_version:
         description: 'Target Version for UDM'
         required: true
-        default: 'v1.1.0'
+        default: 'v1.1.61'
+
 jobs:
   pull_retag_compare_push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
@@ -104,4 +101,4 @@ jobs:
             docker push ${TARGET_IMAGE}
             
             echo "Completed processing ${PACKAGE}"
-
+          done
