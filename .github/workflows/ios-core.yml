@@ -61,6 +61,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          if ! command -v docker-scout &> /dev/null
+          then
+            echo "Docker Scout not found. Installing Docker Scout..."
+            curl -fsSL https://downloads.docker.com/scout/install.sh | sudo bash
+          else
+            echo "Docker Scout is already installed."
+          fi
+
       - name: Pull, Retag, Compare, and Push Docker Images
         run: |
           # Define associative arrays for source and target versions
