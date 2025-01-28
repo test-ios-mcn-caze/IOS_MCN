@@ -86,5 +86,5 @@ jobs:
             docker pull ${SOURCE_IMAGE}
 
             echo "Pushing to ${TARGET_IMAGE}..."
-            docker push ${SOURCE_IMAGE} # Directly push without retagging
+            docker push ${SOURCE_IMAGE}
           done
