@@ -68,10 +68,10 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Install Dive (if not already installed)
+      - name: Install Dive
         run: |
-          curl -sL https://github.com/wagoodman/dive/releases/download/v0.10.0/dive_0.10.0_linux_amd64.tar.gz | tar xz
-          sudo mv dive /usr/local/bin
+          wget https://github.com/wagoodman/dive/releases/download/v0.10.0/dive_0.10.0_linux_amd64.deb
+          sudo apt install ./dive_0.10.0_linux_amd64.deb
 
       - name: Pull, Retag, Compare, and Push Docker Images
         run: |
@@ -106,12 +106,39 @@ jobs:
             echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
             docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
             
-            # Comparing images using dive
-            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE} using Dive..."
-            dive --source ${SOURCE_IMAGE} --target ${TARGET_IMAGE}
+            # Compare images using docker inspect
+            echo "Comparing images..."
+            echo "Source image layers:"
+            docker inspect ${SOURCE_IMAGE} -f '{{.RootFS.Layers}}' > source_layers.txt
+            echo "Target image layers:"
+            docker inspect ${TARGET_IMAGE} -f '{{.RootFS.Layers}}' > target_layers.txt
+            
+            # Compare layer digests
+            if cmp -s source_layers.txt target_layers.txt; then
+              echo "Image layers are identical"
+            else
+              echo "Warning: Image layers differ"
+              exit 1
+            fi
+            
+            # Compare image configs
+            echo "Comparing image configurations..."
+            docker inspect ${SOURCE_IMAGE} -f '{{.Config}}' > source_config.txt
+            docker inspect ${TARGET_IMAGE} -f '{{.Config}}' > target_config.txt
+            if cmp -s source_config.txt target_config.txt; then
+              echo "Image configurations are identical"
+            else
+              echo "Image configurations differ"
+              exit 1
+            fi
+            
+            # Optional: Analyze individual images with dive
+            echo "Analyzing source image with dive..."
+            dive ${SOURCE_IMAGE} --ci
             
             echo "Pushing ${TARGET_IMAGE}..."
             docker push ${TARGET_IMAGE}
             
             echo "Completed processing ${PACKAGE}"
+            echo "----------------------------------------"
           done
