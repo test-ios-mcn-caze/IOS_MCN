@@ -75,9 +75,10 @@ jobs:
 
       - name: Fetch Total Packages Count for ios-mcn-core
         run: |
-          echo "Fetching total number of packages for ios-mcn-core..."
-          TOTAL_IOS_MC_CORE=$(curl -s -H "Authorization: Bearer ${{ secrets.REPOTOKEN }}" "https://api.github.com/orgs/ios-mcn-core/packages" | jq '. | length')
-          echo "Total packages in ios-mcn-core: $TOTAL_IOS_MC_CORE"
+           echo "Fetching total number of packages for ios-mcn-core..."
+           TOTAL_IOS_MC_CORE=$(curl -s -H "Authorization: Bearer ${{ secrets.REPOTOKEN }}" "https://api.github.com/orgs/ios-mcn-core/packages" | jq '. | length')
+           echo "Total packages in ios-mcn-core: $TOTAL_IOS_MC_CORE"
+
 
       - name: Pull, Retag, Compare, and Push Docker Images
         run: |
