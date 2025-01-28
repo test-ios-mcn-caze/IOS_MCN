@@ -100,7 +100,7 @@ jobs:
             docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
             
             echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
-            docker scout compare ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
             
             echo "Pushing ${TARGET_IMAGE}..."
             docker push ${TARGET_IMAGE}
