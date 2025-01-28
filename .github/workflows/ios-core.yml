@@ -1,58 +1,106 @@
-name: Pull and Push Images from ios-mcn-core
-
+name: Pull and Push Images with Custom Tags
 on:
   workflow_dispatch:
     inputs:
-      amf_version:
-        description: 'Version tag for AMF (e.g., release-0.0.10)'
+      # Source versions
+      amf_source_version:
+        description: 'Source Version for AMF (e.g., release-0.0.10)'
         required: true
         default: 'release-0.0.10'
-      smf_version:
-        description: 'Version tag for SMF (e.g., release-0.0.6)'
+      amf_target_version:
+        description: 'Target Version for AMF (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      
+      smf_source_version:
+        description: 'Source Version for SMF'
         required: true
         default: 'release-0.0.6'
-      pcf_version:
-        description: 'Version tag for PCF (e.g., release-0.0.4)'
+      smf_target_version:
+        description: 'Target Version for SMF'
+        required: true
+        default: 'v2.0.0'
+      
+      pcf_source_version:
+        description: 'Source Version for PCF'
         required: true
         default: 'release-0.0.4'
-      nrf_version:
-        description: 'Version tag for NRF (e.g., release-0.0.5)'
+      pcf_target_version:
+        description: 'Target Version for PCF'
+        required: true
+        default: 'v1.5.0'
+      
+      nrf_source_version:
+        description: 'Source Version for NRF'
         required: true
         default: 'release-0.0.5'
-      udm_version:
-        description: 'Version tag for UDM (e.g., release-0.0.4)'
+      nrf_target_version:
+        description: 'Target Version for NRF'
+        required: true
+        default: 'v1.2.0'
+      
+      udm_source_version:
+        description: 'Source Version for UDM'
         required: true
         default: 'release-0.0.4'
-      udr_version:
-        description: 'Version tag for UDR (e.g., release-0.0.4)'
+      udm_target_version:
+        description: 'Target Version for UDM'
+        required: true
+        default: 'v1.1.0'
+      
+      udr_source_version:
+        description: 'Source Version for UDR'
         required: true
         default: 'release-0.0.4'
-      nssf_version:
-        description: 'Version tag for NSSF (e.g., release-0.0.4)'
+      udr_target_version:
+        description: 'Target Version for UDR'
+        required: true
+        default: 'v1.3.0'
+      
+      nssf_source_version:
+        description: 'Source Version for NSSF'
         required: true
         default: 'release-0.0.4'
-      webui_version:
-        description: 'Version tag for Webconsole (e.g., release-0.0.4)'
+      nssf_target_version:
+        description: 'Target Version for NSSF'
+        required: true
+        default: 'v1.0.1'
+      
+      webui_source_version:
+        description: 'Source Version for Webconsole'
         required: true
         default: 'release-0.0.4'
-      metricfunc_version:
-        description: 'Version tag for Metric Function (e.g., release-0.0.4)'
+      webui_target_version:
+        description: 'Target Version for Webconsole'
+        required: true
+        default: 'v2.1.0'
+      
+      metricfunc_source_version:
+        description: 'Source Version for Metric Function'
         required: true
         default: 'release-0.0.4'
-      ausf_version:
-        description: 'Version tag for AUSF (e.g., release-0.0.4)'
+      metricfunc_target_version:
+        description: 'Target Version for Metric Function'
+        required: true
+        default: 'v1.4.0'
+      
+      ausf_source_version:
+        description: 'Source Version for AUSF'
         required: true
         default: 'release-0.0.4'
+      ausf_target_version:
+        description: 'Target Version for AUSF'
+        required: true
+        default: 'v1.6.0'
 
 jobs:
   pull_and_push_images:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Docker
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       - name: Log in to GitHub Container Registry
@@ -64,27 +112,49 @@ jobs:
 
       - name: Pull and Push Docker Images
         run: |
-          declare -A CORE_PACKAGES=(
-            ["5gc-amf"]="${{ github.event.inputs.amf_version }}"
-            ["5gc-smf"]="${{ github.event.inputs.smf_version }}"
-            ["5gc-pcf"]="${{ github.event.inputs.pcf_version }}"
-            ["5gc-nrf"]="${{ github.event.inputs.nrf_version }}"
-            ["5gc-udm"]="${{ github.event.inputs.udm_version }}"
-            ["5gc-udr"]="${{ github.event.inputs.udr_version }}"
-            ["5gc-nssf"]="${{ github.event.inputs.nssf_version }}"
-            ["5gc-webui"]="${{ github.event.inputs.webui_version }}"
-            ["metricfunc"]="${{ github.event.inputs.metricfunc_version }}"
-            ["5gc-ausf"]="${{ github.event.inputs.ausf_version }}"
+          # Define associative arrays for source and target versions
+          declare -A SOURCE_VERSIONS=(
+            ["5gc-amf"]="${{ github.event.inputs.amf_source_version }}"
+            ["5gc-smf"]="${{ github.event.inputs.smf_source_version }}"
+            ["5gc-pcf"]="${{ github.event.inputs.pcf_source_version }}"
+            ["5gc-nrf"]="${{ github.event.inputs.nrf_source_version }}"
+            ["5gc-udm"]="${{ github.event.inputs.udm_source_version }}"
+            ["5gc-udr"]="${{ github.event.inputs.udr_source_version }}"
+            ["5gc-nssf"]="${{ github.event.inputs.nssf_source_version }}"
+            ["5gc-webui"]="${{ github.event.inputs.webui_source_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_source_version }}"
+            ["5gc-ausf"]="${{ github.event.inputs.ausf_source_version }}"
           )
-
-          for PACKAGE in "${!CORE_PACKAGES[@]}"; do
-            VERSION=${CORE_PACKAGES[$PACKAGE]}
-            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
-            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/IOS_MCN/${PACKAGE}:${VERSION}"
-
+          
+          declare -A TARGET_VERSIONS=(
+            ["5gc-amf"]="${{ github.event.inputs.amf_target_version }}"
+            ["5gc-smf"]="${{ github.event.inputs.smf_target_version }}"
+            ["5gc-pcf"]="${{ github.event.inputs.pcf_target_version }}"
+            ["5gc-nrf"]="${{ github.event.inputs.nrf_target_version }}"
+            ["5gc-udm"]="${{ github.event.inputs.udm_target_version }}"
+            ["5gc-udr"]="${{ github.event.inputs.udr_target_version }}"
+            ["5gc-nssf"]="${{ github.event.inputs.nssf_target_version }}"
+            ["5gc-webui"]="${{ github.event.inputs.webui_target_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_target_version }}"
+            ["5gc-ausf"]="${{ github.event.inputs.ausf_target_version }}"
+          )
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/Test-IOS-MCN-CAZE/${PACKAGE}:${TARGET_VERSION}"
+            
+            echo "Processing ${PACKAGE}..."
             echo "Pulling ${SOURCE_IMAGE}..."
             docker pull ${SOURCE_IMAGE}
-
-            echo "Pushing to ${TARGET_IMAGE}..."
-            docker push ${SOURCE_IMAGE}
+            
+            echo "Retagging to ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
           done
