@@ -1,8 +1,8 @@
-name: Pull and Push Images with Custom Tags
+name: Pull, Retag, Compare, and Push Images
 on:
   workflow_dispatch:
     inputs:
-      # Source versions
+      # Source and target versions for each package
       amf_source_version:
         description: 'Source Version for AMF (e.g., release-0.0.10)'
         required: true
@@ -48,7 +48,7 @@ on:
         required: true
         default: 'v1.1.0'
 jobs:
-  pull_and_push_images:
+  pull_retag_compare_push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -64,7 +64,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Pull and Push Docker Images
+      - name: Pull, Retag, Compare, and Push Docker Images
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
@@ -73,7 +73,6 @@ jobs:
             ["5gc-pcf"]="${{ github.event.inputs.pcf_source_version }}"
             ["5gc-nrf"]="${{ github.event.inputs.nrf_source_version }}"
             ["5gc-udm"]="${{ github.event.inputs.udm_source_version }}"
-            
           )
           
           declare -A TARGET_VERSIONS=(
@@ -82,7 +81,6 @@ jobs:
             ["5gc-pcf"]="${{ github.event.inputs.pcf_target_version }}"
             ["5gc-nrf"]="${{ github.event.inputs.nrf_target_version }}"
             ["5gc-udm"]="${{ github.event.inputs.udm_target_version }}"
-            
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
@@ -96,11 +94,14 @@ jobs:
             echo "Pulling ${SOURCE_IMAGE}..."
             docker pull ${SOURCE_IMAGE}
             
-            echo "Retagging to ${TARGET_IMAGE}..."
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
             docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} ${TARGET_IMAGE}
             
             echo "Pushing ${TARGET_IMAGE}..."
             docker push ${TARGET_IMAGE}
             
             echo "Completed processing ${PACKAGE}"
-          done
+
