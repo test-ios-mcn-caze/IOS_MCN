@@ -108,7 +108,7 @@ jobs:
             
             # Comparing images using dive
             echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE} using Dive..."
-            dive --compare ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            dive --source ${SOURCE_IMAGE} --target ${TARGET_IMAGE}
             
             echo "Pushing ${TARGET_IMAGE}..."
             docker push ${TARGET_IMAGE}
