@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       amf_source_version:
-        description: 'Source Version for AMF (e.g., release-0.0.10)'
+        description: 'Source Version for AMF'
         required: true
         default: 'release-0.0.10'
       amf_target_version:
-        description: 'Target Version for AMF (e.g., v1.0.0)'
+        description: 'Target Version for AMF'
         required: true
         default: 'v1.2.33'
       smf_source_version:
