@@ -1,0 +1,82 @@
+name: Pull, Retag, and Push Images from ios-mcn-smo
+
+on:
+  workflow_dispatch:
+    inputs:
+      nonrtric-plt-a1policymanagementservice_version:
+        description: 'Version tag for nonrtric-plt-a1policymanagementservice'
+        required: true
+        default: '2.8.1'
+      nonrtric-plt-rappcatalogue_version:
+        description: 'Version tag for nonrtric-plt-rappcatalogue'
+        required: true
+        default: '1.2.0'
+      nonrtric-plt-informationcoordinatorservice_version:
+        description: 'Version tag for nonrtric-plt-informationcoordinatorservice'
+        required: true
+        default: '1.5.0'
+      nonrtric-plt-pmproducer_version:
+        description: 'Version tag for nonrtric-plt-pmproducer'
+        required: true
+        default: '1.0.1'
+      nonrtric-plt-pmlog_version:
+        description: 'Version tag for nonrtric-plt-pmlog'
+        required: true
+        default: '1.0.0'
+      nonrtric-plt-dmaapadapter_version:
+        description: 'Version tag for nonrtric-plt-dmaapadapter'
+        required: true
+        default: '1.4.0'
+      ves-collector_version:
+        description: 'Version tag for ves-collector'
+        required: true
+        default: '1.12.3'
+      
+     
+
+jobs:
+  pull_and_push_images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+     
+      - name: Pull, Retag, and Push all Images from ios-mcn-core
+        run: |
+          
+          declare -A CORE_PACKAGES
+          CORE_PACKAGES=(
+            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_version }}"
+            ["nonrtric-plt-rappcatalogue"]="&{{ github.event.inputs.nonrtric-plt-rappcatalogue_version }}"
+            ["nonrtric-plt-informationcoordinatorservice"]="${{ github.event.inputs.nonrtric-plt-informationcoordinatorservice_version }}"
+            ["nonrtric-plt-pmproducer"]="${{ github.event.inputs.nonrtric-plt-pmproducer_version }}"
+            ["nonrtric-plt-pmlog"]="${{ github.event.inputs.nonrtric-plt-pmlog_version }}"
+            ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric-plt-dmaapadapter_version }}"
+            ["ves-collector"]="${{ github.event.inputs.ves-collector }}"
+            
+          )
+          
+          
+          for PACKAGE in "${!CORE_PACKAGES[@]}"; do
+            VERSION=${CORE_PACKAGES[$PACKAGE]}
+            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${VERSION}"  
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+          done
