@@ -59,7 +59,7 @@ jobs:
           declare -A CORE_PACKAGES
           CORE_PACKAGES=(
             ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_version }}"
-            ["nonrtric-plt-rappcatalogue"]="&{{ github.event.inputs.nonrtric-plt-rappcatalogue_version }}"
+            ["nonrtric-plt-rappcatalogue"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue_version }}"
             ["nonrtric-plt-informationcoordinatorservice"]="${{ github.event.inputs.nonrtric-plt-informationcoordinatorservice_version }}"
             ["nonrtric-plt-pmproducer"]="${{ github.event.inputs.nonrtric-plt-pmproducer_version }}"
             ["nonrtric-plt-pmlog"]="${{ github.event.inputs.nonrtric-plt-pmlog_version }}"
