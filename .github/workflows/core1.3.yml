@@ -12,7 +12,7 @@ on:
         required: true
         default: 'release-haswell-0.0.4'
       upf-epc-pfcpiface_version:
-        description: 'Version tag for WEBUI'
+        description: 'Version tag for upf-epc-pfcpiface'
         required: true
         default: 'release-haswell-0.0.4'
      
