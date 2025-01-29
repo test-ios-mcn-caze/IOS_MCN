@@ -1,0 +1,82 @@
+name: Pull, Retag, and Push Images from ios-mcn-smo
+
+on:
+  workflow_dispatch:
+    inputs:
+      pm-file-converter_version:
+        description: 'Version tag for pm-file-converter'
+        required: true
+        default: 'latest'
+      nonrtric-gateway_version:
+        description: 'Version tag for nonrtric-gateway'
+        required: true
+        default: '1.2.0'
+      nonrtric-controlpanel_version:
+        description: 'Version tag for nonrtric-controlpanel'
+        required: true
+        default: '2.5.0'
+      nonrtric-plt-auth-token-fetch_version:
+        description: 'Version tag for nonrtric-plt-auth-token-fetch'
+        required: true
+        default: '1.1.1'
+      sdnc-web-image_version:
+        description: 'Version tag for sdnc-web-image'
+        required: true
+        default: 'latest'
+      sdnc-image_version:
+        description: 'Version tag for sdnc-image'
+        required: true
+        default: 'latest'
+      datafile-collector_version:
+        description: 'Version tag for datafile-collector'
+        required: true
+        default: '0.0.1'
+      
+     
+
+jobs:
+  pull_and_push_images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+     
+      - name: Pull, Retag, and Push all Images from ios-mcn-core
+        run: |
+          
+          declare -A CORE_PACKAGES
+          CORE_PACKAGES=(
+            ["pm-file-converter"]="${{ github.event.inputs.pm-file-converter_version }}"
+            ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric-gateway_version }}"
+            ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric-controlpanel_version }}"
+            ["nonrtric-plt-auth-token-fetch"]="${{ github.event.inputs.nonrtric-plt-auth-token-fetch_version }}"
+            ["sdnc-web-image"]="${{ github.event.inputs.sdnc-web-image_version }}"
+            ["sdnc-image"]="${{ github.event.inputs.sdnc-image_version }}"
+            ["datafile-collector"]="${{ github.event.inputs.datafile-collector_version }}"
+            
+          )
+          
+          
+          for PACKAGE in "${!CORE_PACKAGES[@]}"; do
+            VERSION=${CORE_PACKAGES[$PACKAGE]}
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${VERSION}"  
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            echo "Retagging ${SOURCE_IMAGE} to ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+          done
