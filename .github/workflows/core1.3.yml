@@ -3,18 +3,18 @@ name: Pull, Retag, and Push Images from ios-mcn-core
 on:
   workflow_dispatch:
     inputs:
-      simapp_version:
-        description: 'Version tag for simapp'
+      bess_build_version:
+        description: 'Version tag for  bess_build'
         required: true
-        default: 'release-0.0.3'
+        default: '240926'
       upf-epc-bess_version:
         description: 'Version tag for upf-epc-bess'
         required: true
-        default: 'release-haswell-0.0.4'
+        default: 'release-ivybridge-0.0.4'
       upf-epc-pfcpiface_version:
         description: 'Version tag for upf-epc-pfcpiface'
         required: true
-        default: 'release-haswell-0.0.4'
+        default: 'release-ivybridge-0.0.4'
      
      
 
@@ -42,7 +42,7 @@ jobs:
           
           declare -A CORE_PACKAGES
           CORE_PACKAGES=(
-            ["simapp"]="${{ github.event.inputs.simapp_version }}"
+            ["bess_build"]="${{ github.event.inputs.bess_build_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_version }}"
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_version }}"
             
