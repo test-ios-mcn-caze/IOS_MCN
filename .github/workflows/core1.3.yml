@@ -3,6 +3,10 @@ name: Pull, Retag, and Push Images from ios-mcn-core
 on:
   workflow_dispatch:
     inputs:
+      simapp_version:
+        description: 'Version tag simapp'
+        required: true
+        default: 'release-ivybridge-0.0.4'
       bess_build_version:
         description: 'Version tag for  bess_build'
         required: true
@@ -45,7 +49,7 @@ jobs:
             ["bess_build"]="${{ github.event.inputs.bess_build_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_version }}"
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_version }}"
-            
+            ["simapp"]="${{ github.event.inputs.simapp_version }}"
             
           )
           
