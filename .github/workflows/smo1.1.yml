@@ -71,7 +71,7 @@ jobs:
           
           for PACKAGE in "${!CORE_PACKAGES[@]}"; do
             VERSION=${CORE_PACKAGES[$PACKAGE]}
-            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${VERSION}"
             TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${VERSION}"  
             echo "Pulling ${SOURCE_IMAGE}..."
             docker pull ${SOURCE_IMAGE}
