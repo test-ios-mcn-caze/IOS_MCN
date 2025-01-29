@@ -64,7 +64,7 @@ jobs:
             ["nonrtric-plt-pmproducer"]="${{ github.event.inputs.nonrtric-plt-pmproducer_version }}"
             ["nonrtric-plt-pmlog"]="${{ github.event.inputs.nonrtric-plt-pmlog_version }}"
             ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric-plt-dmaapadapter_version }}"
-            ["ves-collector"]="${{ github.event.inputs.ves-collector }}"
+            ["ves-collector"]="${{ github.event.inputs.ves-collector_version }}"
             
           )
           
