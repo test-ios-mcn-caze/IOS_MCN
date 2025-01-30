@@ -6,11 +6,11 @@ on:
       simapp_version:
         description: 'Version tag simapp'
         required: true
-        default: 'release-ivybridge-0.0.4'
+        default: 'release-0.0.3'
       bess_build_version:
         description: 'Version tag for  bess_build'
         required: true
-        default: '240926'
+        default: 'release-0.0.2'
       upf-epc-bess_version:
         description: 'Version tag for upf-epc-bess'
         required: true
@@ -46,10 +46,11 @@ jobs:
           
           declare -A CORE_PACKAGES
           CORE_PACKAGES=(
+            ["simapp"]="${{ github.event.inputs.simapp_version }}"
             ["bess_build"]="${{ github.event.inputs.bess_build_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_version }}"
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_version }}"
-            ["simapp"]="${{ github.event.inputs.simapp_version }}"
+           
             
           )
           
