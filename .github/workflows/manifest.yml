@@ -24,7 +24,7 @@ jobs:
       - name: Download Google Sheet as CSV
         run: |
           # Download Google Sheet as CSV using curl
-          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/e/2PACX-1vT_v8rTzD2ziwH0Se-l23jAf8_YD9Kl8YkK0TnRjqgZ_M5-zfQdP5tqz6uKRxkFz5TxP7ch1YVNCvjlgk/pub?output=csv"
+          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/1WmqxAyNp6st_l5nN4_LGbpgI5br6ijlI4g3qH3GrlUU/edit?usp=sharing"
 
       - name: Compare Source and Target Image Manifest SHAs
         run: |
