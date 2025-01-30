@@ -29,10 +29,10 @@ jobs:
           echo "📄 CSV content:"
           cat image_sha.csv
 
-          # Iterate over each line in the CSV, skipping header and empty lines
-          while IFS=, read -r IMAGE_NAME TARGET_SHA SOURCE_SHA; do
-              # Skip header row or any empty lines
-              if [[ "$IMAGE_NAME" == "Docker Image" || -z "$IMAGE_NAME" ]]; then
+          # Skip header line and iterate over each line in the CSV file
+          tail -n +2 image_sha.csv | while IFS=, read -r IMAGE_NAME TARGET_SHA SOURCE_SHA; do
+              # Skip any empty lines
+              if [[ -z "$IMAGE_NAME" || -z "$TARGET_SHA" || -z "$SOURCE_SHA" ]]; then
                   continue
               fi
 
@@ -48,6 +48,6 @@ jobs:
                   echo "   Source SHA: $SOURCE_SHA"
                   exit 1
               fi
-          done < "image_sha.csv"
+          done
 
           echo "✅ SHA comparison completed."
