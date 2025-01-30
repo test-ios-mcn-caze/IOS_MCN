@@ -31,7 +31,13 @@ jobs:
           # Function to fetch Docker image manifest SHA (digest)
           get_manifest_sha() {
               IMAGE=$1
-              skopeo inspect docker://$IMAGE | jq -r '.Digest'
+              if [[ "$IMAGE" =~ ^sha256: ]]; then
+                  # If it's already a digest, return it directly
+                  echo "$IMAGE"
+              else
+                  # Fetch digest for the image from registry
+                  skopeo inspect docker://$IMAGE | jq -r '.Digest'
+              fi
           }
 
           # Read CSV file and compare SHA values
