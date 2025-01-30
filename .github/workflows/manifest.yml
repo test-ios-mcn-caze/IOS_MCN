@@ -37,6 +37,10 @@ jobs:
           # Read CSV file and compare SHA values
           echo "🔍 Comparing image manifest SHAs from Google Sheet..."
 
+          # Debug: Print the CSV contents
+          echo "📄 CSV content:"
+          cat image_sha.csv
+
           # Iterate over each line in the CSV
           while IFS=, read -r IMAGE_NAME SOURCE_SHA TARGET_SHA; do
               # Skip header row
@@ -44,7 +48,10 @@ jobs:
                   continue
               fi
 
-              # Fetch manifest SHAs
+              # Debug: Print values being compared
+              echo "🔎 Comparing: Image: $IMAGE_NAME, Source SHA: $SOURCE_SHA, Target SHA: $TARGET_SHA"
+
+              # Fetch manifest SHAs from the source and target images
               SOURCE_SHA_FROM_REGISTRY=$(get_manifest_sha "$SOURCE_SHA")
               TARGET_SHA_FROM_REGISTRY=$(get_manifest_sha "$TARGET_SHA")
 
