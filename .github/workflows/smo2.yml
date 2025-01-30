@@ -6,7 +6,7 @@ on:
       pm-file-converter_version:
         description: 'Version tag for pm-file-converter'
         required: true
-        default: 'latest'
+        default: '1.2.0'
       nonrtric-gateway_version:
         description: 'Version tag for nonrtric-gateway'
         required: true
@@ -22,11 +22,11 @@ on:
       sdnc-web-image_version:
         description: 'Version tag for sdnc-web-image'
         required: true
-        default: 'latest'
+        default: '2.6.1'
       sdnc-image_version:
         description: 'Version tag for sdnc-image'
         required: true
-        default: 'latest'
+        default: '2.6.1'
       datafile-collector_version:
         description: 'Version tag for datafile-collector'
         required: true
