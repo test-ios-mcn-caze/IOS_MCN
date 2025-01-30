@@ -1,4 +1,4 @@
-name: Compare Docker Image Manifest SHAs from Google Sheets
+name: Compare Docker Image Manifest SHAs from Google Sheets (Sheet2)
 
 on:
   push:
@@ -21,23 +21,18 @@ jobs:
           sudo apt-get install -y python3-pip jq skopeo
           pip3 install pandas
 
-      - name: Download Google Sheet as CSV
+      - name: Download Google Sheet (Sheet2) as CSV
         run: |
-          # Download Google Sheet as CSV using the correct URL
-          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/1WmqxAyNp6st_l5nN4_LGbpgI5br6ijlI4g3qH3GrlUU/gviz/tq?tqx=out:csv"
+          # Download Google Sheet (Sheet2) as CSV using the correct URL
+          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/1WmqxAyNp6st_l5nN4_LGbpgI5br6ijlI4g3qH3GrlUU/gviz/tq?tqx=out:csv&sheet=Sheet2"
 
       - name: Compare Docker Image SHAs
         run: |
           # Function to fetch Docker image manifest SHA (digest)
           get_manifest_sha() {
               IMAGE=$1
-              if [[ "$IMAGE" =~ ^sha256: ]]; then
-                  # If it's already a digest, return it directly
-                  echo "$IMAGE"
-              else
-                  # Fetch digest for the image from registry
-                  skopeo inspect docker://$IMAGE | jq -r '.Digest'
-              fi
+              # Fetch digest for the image from registry using skopeo
+              skopeo inspect docker://$IMAGE | jq -r '.Digest'
           }
 
           # Read CSV file and compare SHA values
@@ -57,20 +52,13 @@ jobs:
               # Debug: Print values being compared
               echo "🔎 Comparing: Docker Image: $IMAGE_NAME, Target SHA: $TARGET_SHA, Source SHA: $SOURCE_SHA"
 
-              # Fetch manifest SHAs (digest) from the source and target Docker images
-              TARGET_SHA_FROM_REGISTRY=$(get_manifest_sha "$TARGET_SHA")
-              SOURCE_SHA_FROM_REGISTRY=$(get_manifest_sha "$SOURCE_SHA")
-
-              echo "Target Docker Image Manifest SHA: $TARGET_SHA_FROM_REGISTRY"
-              echo "Source Docker Image Manifest SHA: $SOURCE_SHA_FROM_REGISTRY"
-
-              # Compare SHAs
-              if [[ "$TARGET_SHA_FROM_REGISTRY" == "$SOURCE_SHA_FROM_REGISTRY" ]]; then
+              # Both SOURCE_SHA and TARGET_SHA are already digests (sha256:...), so directly compare them
+              if [[ "$TARGET_SHA" == "$SOURCE_SHA" ]]; then
                   echo "✅ MATCH: $IMAGE_NAME"
               else
                   echo "❌ MISMATCH: $IMAGE_NAME"
-                  echo "   Target SHA: $TARGET_SHA_FROM_REGISTRY"
-                  echo "   Source SHA: $SOURCE_SHA_FROM_REGISTRY"
+                  echo "   Target SHA: $TARGET_SHA"
+                  echo "   Source SHA: $SOURCE_SHA"
                   exit 1
               fi
           done < "image_sha.csv"
