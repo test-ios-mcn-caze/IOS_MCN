@@ -1,0 +1,65 @@
+name: Compare Image Manifest SHAs from Google Sheets
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  compare-sha:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip jq skopeo
+          pip3 install pandas
+
+      - name: Download Google Sheet as CSV
+        run: |
+          # Download Google Sheet as CSV using curl
+          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/e/2PACX-1vT_v8rTzD2ziwH0Se-l23jAf8_YD9Kl8YkK0TnRjqgZ_M5-zfQdP5tqz6uKRxkFz5TxP7ch1YVNCvjlgk/pub?output=csv"
+
+      - name: Compare Source and Target Image Manifest SHAs
+        run: |
+          # Function to fetch manifest SHA
+          get_manifest_sha() {
+              IMAGE=$1
+              skopeo inspect docker://$IMAGE | jq -r '.Digest'
+          }
+
+          # Read CSV file and compare SHA values
+          echo "🔍 Comparing image manifest SHAs from Google Sheet..."
+
+          # Iterate over each line in the CSV
+          while IFS=, read -r IMAGE_NAME SOURCE_SHA TARGET_SHA; do
+              # Skip header row
+              if [[ "$IMAGE_NAME" == "Image Name" ]]; then
+                  continue
+              fi
+
+              # Fetch manifest SHAs
+              SOURCE_SHA_FROM_REGISTRY=$(get_manifest_sha "$SOURCE_SHA")
+              TARGET_SHA_FROM_REGISTRY=$(get_manifest_sha "$TARGET_SHA")
+
+              echo "Source Image Manifest SHA: $SOURCE_SHA_FROM_REGISTRY"
+              echo "Target Image Manifest SHA: $TARGET_SHA_FROM_REGISTRY"
+
+              # Compare SHAs
+              if [[ "$SOURCE_SHA_FROM_REGISTRY" == "$TARGET_SHA_FROM_REGISTRY" ]]; then
+                  echo "✅ MATCH: $IMAGE_NAME"
+              else
+                  echo "❌ MISMATCH: $IMAGE_NAME"
+                  echo "   Source SHA: $SOURCE_SHA_FROM_REGISTRY"
+                  echo "   Target SHA: $TARGET_SHA_FROM_REGISTRY"
+                  exit 1
+              fi
+          done < "image_sha.csv"
+
+          echo "✅ SHA comparison completed."
