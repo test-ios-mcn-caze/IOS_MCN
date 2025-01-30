@@ -18,36 +18,33 @@ jobs:
       - name: Download Google Sheet (Sheet2) as CSV
         run: |
           # Download Google Sheet (Sheet2) as CSV using the correct URL
-          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/1PVuZlolMgz4L6cSzHBDEpsJvs1Gc2etAGZKmK9sNnQs/edit?usp=sharing"
-
+          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/1PVuZlolMgz4L6cSzHBDEpsJvs1Gc2etAGZKmK9sNnQs/export?format=csv&id=1PVuZlolMgz4L6cSzHBDEpsJvs1Gc2etAGZKmK9sNnQs&gid=1981908113"
+        
       - name: Compare Target and Source SHAs
         run: |
           # Read CSV file and compare SHA values
           echo "🔍 Comparing Target and Source SHAs from Google Sheet..."
-
           # Debug: Print the CSV contents
           echo "📄 CSV content:"
           cat image_sha.csv
-
+          
           # Skip header line and iterate over each line in the CSV file
           tail -n +2 image_sha.csv | while IFS=, read -r IMAGE_NAME TARGET_SHA SOURCE_SHA; do
               # Skip any empty lines
-              if [[ -z "$IMAGE_NAME" || -z "$TARGET_SHA" || -z "$SOURCE_SHA" ]]; then
+              if [[ -z "$TARGET_SHA" || -z "$SOURCE_SHA" ]]; then
                   continue
               fi
-
               # Debug: Print values being compared
-              echo "🔎 Comparing: Docker Image: $IMAGE_NAME, Target SHA: $TARGET_SHA, Source SHA: $SOURCE_SHA"
-
+              echo "🔎 Comparing: Target SHA: $TARGET_SHA, Source SHA: $SOURCE_SHA"
               # Compare the Target and Source SHA
               if [[ "$TARGET_SHA" == "$SOURCE_SHA" ]]; then
-                  echo "✅ MATCH: $IMAGE_NAME"
+                  echo "✅ MATCH"
               else
-                  echo "❌ MISMATCH: $IMAGE_NAME"
+                  echo "❌ MISMATCH"
                   echo "   Target SHA: $TARGET_SHA"
                   echo "   Source SHA: $SOURCE_SHA"
                   exit 1
               fi
           done
-
+          
           echo "✅ SHA comparison completed."
