@@ -18,7 +18,7 @@ jobs:
       - name: Download Google Sheet (Sheet2) as CSV
         run: |
           # Download Google Sheet (Sheet2) as CSV using the correct URL
-          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/1WmqxAyNp6st_l5nN4_LGbpgI5br6ijlI4g3qH3GrlUU/gviz/tq?tqx=out:csv&sheet=Sheet2"
+          curl -L -o image_sha.csv "https://docs.google.com/spreadsheets/d/1PVuZlolMgz4L6cSzHBDEpsJvs1Gc2etAGZKmK9sNnQs/edit?usp=sharing"
 
       - name: Compare Target and Source SHAs
         run: |
