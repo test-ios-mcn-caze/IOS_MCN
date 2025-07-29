@@ -36,8 +36,8 @@ jobs:
       - name: Pull, Retag, and Push all Images from ios-mcn-core
         run: |
           
-          declare -A CORE_PACKAGES
-          CORE_PACKAGES=(
+          declare -A IMS_PACKAGES
+          IMS_PACKAGES=(
             ["n5"]="${{ github.event.inputs.n5_version }}"
             ["cscf"]="${{ github.event.inputs.cscf_version }}"
             
