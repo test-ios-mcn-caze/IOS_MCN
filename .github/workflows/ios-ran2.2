@@ -1,0 +1,121 @@
+name: Pull, Retag, and Push Images from ios-mcn-ran
+
+on:
+  workflow_dispatch:
+    inputs:
+       ran-build-uni_source_version:
+        description: 'Source Version tag for  ran-build-uni (e.g., release-0.0.10)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ran-build-uni_target_version:
+        description: 'Target Version tag for ran-build-uni (e.g., release-0.0.10)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ran-build-fhi72-uni_source_version:
+        description: 'Source Version tag for ran-build-fhi72-uni (e.g., release-0.0.6)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ran-build-fhi72-uni_target_version:
+        description: 'Target Version tag for ran-build-fhi72-uni (e.g., release-0.0.6)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ran-gnb-uni_source_version:
+        description: 'Source Version tag for  ran-gnb-uni (e.g., release-0.0.4)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ran-gnb-uni_target_version:
+        description: 'Target Version tag for  ran-gnb-uni (e.g., release-0.0.4)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ran-gnb-fhi72-uni_source_version:
+        description: 'Source Version tag for ran-gnb-fhi72-uni (e.g., release-0.0.5)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ran-gnb-fhi72-uni_target_version:
+        description: 'Target Version tag for ran-gnb-fhi72-uni (e.g., release-0.0.5)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ios-mcn-nr-ue-dist_source_version:
+        description: 'Source Version tag for ios-mcn-nr-ue-dist (e.g., release-0.0.4)'
+        required: true
+        default: 'v0.1.4.rc3'
+      ios-mcn-nr-ue-dist_target_version:
+        description: 'Target Version tag for ios-mcn-nr-ue-dist (e.g., release-0.0.4)'
+        required: true
+        default: 'v0.1.4.rc3'
+     
+
+jobs:
+  pull_and_push_images:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+     
+      - name: Pull, Retag, Compare and Push all Images from ios-mcn-core
+        run: |
+          
+          
+          declare -A SOURCE_VERSIONS=(
+            ["ran-build-uni"]="${{ github.event.inputs.ran-build-uni_source_version }}"
+            ["ran-build-fhi72-uni"]="${{ github.event.inputs.ran-build-fhi72-uni_source_version }}"
+            ["ran-gnb-uni"]="${{ github.event.inputs.ran-gnb-uni_source_version }}"
+            ["ran-gnb-fhi72-uni"]="${{ github.event.inputs.ran-gnb-fhi72-uni_source_version }}"
+            ["ios-mcn-nr-ue-dist"]="${{ github.event.inputs.ios-mcn-nr-ue-dist_source_version }}"
+            
+          )
+          declare -A TARGET_VERSIONS=(
+            ["ran-build-uni"]="${{ github.event.inputs.ran-build-uni_target_version }}"
+            ["ran-build-fhi72-uni"]="${{ github.event.inputs.ran-build-fhi72-uni_target_version }}"
+            ["ran-gnb-uni"]="${{ github.event.inputs.ran-gnb-uni_target_version }}"
+            ["ran-gnb-fhi72-uni"]="${{ github.event.inputs.ran-gnb-fhi72-uni_target_version }}"
+            ["ios-mcn-nr-ue-dist"]="${{ github.event.inputs.ios-mcn-nr-ue-dist_target_version }}"
+            
+          )
+          
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-ran/${PACKAGE}:${SOURCE_VERSION}" #change the name of organization
+            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/${PACKAGE}:${TARGET_VERSION}" #change the name of organization
+            
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
+          done
