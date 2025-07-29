@@ -3,26 +3,26 @@ name: Pull, Retag, and Push Images from ios-mcn-ran
 on:
   workflow_dispatch:
     inputs:
-      amf_version:
-        description: 'Version tag for AMF (e.g., release-0.0.10)'
+      ran-base-dist_version:
+        description: 'Version tag for ran-base-dist (e.g., release-0.0.10)'
         required: true
-        default: 'release-0.0.10'
-      smf_version:
-        description: 'Version tag for SMF (e.g., release-0.0.6)'
+        default: 'v0.1.4.rc3'
+      ios-mcn-cuup-dist_version:
+        description: 'Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
         required: true
-        default: 'release-0.0.6'
-      pcf_version:
-        description: 'Version tag for PCF (e.g., release-0.0.4)'
+        default: 'v0.1.4.rc3'
+      ran-build-dist_version:
+        description: 'Version tag for ran-build-dist (e.g., release-0.0.4)'
         required: true
-        default: 'release-0.0.4'
-      nrf_version:
-        description: 'Version tag for NRF (e.g., release-0.0.5)'
+        default: 'v0.1.4.rc3'
+      ios-mcn-gnb-dist_version:
+        description: 'Version tag for ios-mcn-gnb-dist (e.g., release-0.0.5)'
         required: true
-        default: 'release-0.0.5'
-      udm_version:
-        description: 'Version tag for UDM (e.g., release-0.0.4)'
+        default: 'v0.1.4.rc3'
+      ran-base-uni_version:
+        description: 'Version tag for ran-base-uni (e.g., release-0.0.4)'
         required: true
-        default: 'release-0.0.4'
+        default: 'v0.1.4.rc3'
      
 
 jobs:
@@ -47,20 +47,20 @@ jobs:
       - name: Pull, Retag, and Push all Images from ios-mcn-core
         run: |
           
-          declare -A CORE_PACKAGES
-          CORE_PACKAGES=(
-            ["5gc-amf"]="${{ github.event.inputs.amf_version }}"
-            ["5gc-smf"]="${{ github.event.inputs.smf_version }}"
-            ["5gc-pcf"]="${{ github.event.inputs.pcf_version }}"
-            ["5gc-nrf"]="${{ github.event.inputs.nrf_version }}"
-            ["5gc-udm"]="${{ github.event.inputs.udm_version }}"
+          declare -A RAN_PACKAGES
+          RAN_PACKAGES=(
+            ["ran-base-dist"]="${{ github.event.inputs.ran-base-dist_version }}"
+            ["ios-mcn-cuup-dist"]="${{ github.event.inputs.ios-mcn-cuup-dist_version }}"
+            ["ran-build-dist"]="${{ github.event.inputs.ran-build-dist_version }}"
+            ["ios-mcn-gnb-dist"]="${{ github.event.inputs.ios-mcn-gnb-dist_version }}"
+            ["ran-base-uni"]="${{ github.event.inputs.ran-base-uni_version }}"
             
           )
           
           
-          for PACKAGE in "${!CORE_PACKAGES[@]}"; do
-            VERSION=${CORE_PACKAGES[$PACKAGE]}
-            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${VERSION}"
+          for PACKAGE in "${!RAN_PACKAGES[@]}"; do
+            VERSION=${RAN_PACKAGES[$PACKAGE]}
+            SOURCE_IMAGE="ghcr.io/ios-mcn-ran/${PACKAGE}:${VERSION}"
             TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${VERSION}"  
             echo "Pulling ${SOURCE_IMAGE}..."
             docker pull ${SOURCE_IMAGE}
