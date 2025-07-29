@@ -48,7 +48,7 @@ jobs:
         run: |
           
           declare -A RAN_PACKAGES
-          CORE_PACKAGES=(
+          RAN_PACKAGES=(
             ["ran-build-uni"]="${{ github.event.inputs.ran-build-uni_version }}"
             ["ran-build-fhi72-uni"]="${{ github.event.inputs.ran-build-fhi72-uni_version }}"
             ["ran-gnb-uni"]="${{ github.event.inputs.ran-gnb-uni_version }}"
