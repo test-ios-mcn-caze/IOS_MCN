@@ -53,7 +53,7 @@ jobs:
 
 
      
-      - name: Pull, Retag, compare and Push all Images from ios-mcn-core
+      - name: Pull, Retag, compare and Push all Images from ios-mcn-ims
         run: |
           
           declare -A SOURCE_VERSIONS=(
