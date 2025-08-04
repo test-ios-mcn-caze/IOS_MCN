@@ -14,35 +14,35 @@ on:
       smf_source_version:
         description: 'Source Version for SMF'
         required: true
-        default: 'release-0.0.6'
+        default: 'release-0.1.5'
       smf_target_version:
         description: 'Target Version for SMF'
         required: true
-        default: 'v2.2.25'
+        default: 'release-0.1.5'
       pcf_source_version:
         description: 'Source Version for PCF'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
       pcf_target_version:
         description: 'Target Version for PCF'
         required: true
-        default: 'v1.5.51'
+        default: 'release-0.1.2'
       nrf_source_version:
         description: 'Source Version for NRF'
         required: true
-        default: 'release-0.0.5'
+        default: 'release-0.1.1' 
       nrf_target_version:
         description: 'Target Version for NRF'
         required: true
-        default: 'v1.2.26'
+        default: 'release-0.1.1'
       udm_source_version:
         description: 'Source Version for UDM'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
       udm_target_version:
         description: 'Target Version for UDM'
         required: true
-        default: 'v1.1.61'
+        default: 'release-0.1.2'
 
 jobs:
   pull_retag_compare_push:
