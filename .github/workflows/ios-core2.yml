@@ -6,43 +6,43 @@ on:
       udr_source_version:
         description: 'Source Version for UDR'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
       udr_target_version:
         description: 'Target Version for UDR'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
       nssf_source_version:
         description: 'Source Version for NSSF'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.1'
       nssf_target_version:
         description: 'Target Version for NSSF'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.1'
       webui_source_version:
         description: 'Source Version for WEBUI'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
       webui_target_version:
         description: 'Target Version for WEBUI'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
       metricfunc_source_version:
         description: 'Source Version for METRICFUNC'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.1'
       metricfunc_target_version:
         description: 'Target Version for METRICFUNC'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.1'
       ausf_source_version:
         description: 'Source Version for AUSF'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
       ausf_target_version:
         description: 'Target Version for AUSF'
         required: true
-        default: 'release-0.0.4'
+        default: 'release-0.1.2'
 
 jobs:
   pull_retag_compare_push:
