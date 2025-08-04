@@ -1,4 +1,4 @@
-name: Pull, Retag, Compare, and Push Docker Images
+name: Pull, Retag, and Push Images from ios-mcn-core
 
 on:
   workflow_dispatch:
@@ -6,11 +6,11 @@ on:
       amf_source_version:
         description: 'Source Version for AMF'
         required: true
-        default: 'release-0.0.10'
+        default: 'release-0.1.5'
       amf_target_version:
         description: 'Target Version for AMF'
         required: true
-        default: 'v1.2.33'
+        default: 'release-0.1.5'
       smf_source_version:
         description: 'Source Version for SMF'
         required: true
