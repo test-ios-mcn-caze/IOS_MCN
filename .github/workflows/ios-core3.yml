@@ -6,35 +6,35 @@ on:
       simapp_source_version:
         description: 'Source Version for simapp (e.g., release-0.0.10)'
         required: true
-        default: 'release-0.0.3'
+        default: 'release-0.1.2'
       simapp_target_version:
         description: 'Target Version for simapp (e.g., v1.0.0)'
         required: true
-        default: 'release-0.0.3'
+        default: 'release-0.1.2'
       upf-epc-bess_source_version:
         description: 'Source Version for upf-epc-bess'
         required: true
-        default: 'release-ivybridge-0.0.4'
+        default: 'release-ivybridge-0.1.4'
       upf-epc-bess_target_version:
         description: 'Target Version for upf-epc-bess'
         required: true
-        default: 'release-ivybridge-0.0.4'
+        default: 'release-ivybridge-0.1.4'
       upf-epc-pfcpiface_source_version:
         description: 'Source Version for  upf-epc-pfcpiface'
         required: true
-        default: 'release-ivybridge-0.0.4'
+        default: 'release-ivybridge-0.1.4'
       upf-epc-pfcpiface_target_version:
         description: 'Target Version for  upf-epc-pfcpiface'
         required: true
-        default: 'release-ivybridge-0.0.4'
+        default: 'release-ivybridge-0.1.4'
       bess_build_source_version:
         description: 'Source Version for bess-build'
         required: true
-        default: '240926'
+        default: 'release-0.0.2'
       bess_build_target_version:
         description: 'Target Version for bess-build'
         required: true
-        default: '240926'
+        default: 'release-0.0.2'
       
 
 jobs:
