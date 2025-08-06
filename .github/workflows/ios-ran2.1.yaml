@@ -3,22 +3,22 @@ name: Pull, Retag, Compare and Push Images from ios-mcn-ran
 on:
   workflow_dispatch:
     inputs:
-      ran-base-dist_source_version:
-        description: 'Source Version tag for ran-base-dist (e.g., release-0.0.10)'
-        required: true
-        default: 'v0.1.4.rc4'
-      ran-base-dist_target_version:
-        description: 'Target Version tag for ran-base-dist (e.g., release-0.0.10)'
-        required: true
-        default: 'v0.1.4.rc4'
-      ios-mcn-cuup-dist_source_version:
-        description: 'Source Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
-        required: true
-        default: 'v0.1.4.rc4'
-      ios-mcn-cuup-dist_target_version:
-        description: 'Target Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
-        required: true
-        default: 'v0.1.4.rc4'
+      #ran-base-dist_source_version:
+        #description: 'Source Version tag for ran-base-dist (e.g., release-0.0.10)'
+        #required: true
+      #   default: 'v0.1.4.rc4'
+      # ran-base-dist_target_version:
+      #   description: 'Target Version tag for ran-base-dist (e.g., release-0.0.10)'
+      #   required: true
+      #   default: 'v0.1.4.rc4'
+      #ios-mcn-cuup-dist_source_version:
+      #   description: 'Source Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
+      #   required: true
+      #   default: 'v0.1.4.rc4'
+      # ios-mcn-cuup-dist_target_version:
+      #   description: 'Target Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
+      #   required: true
+      #   default: 'v0.1.4.rc4'
       ran-build-dist_source_version:
         description: 'Source Version tag for ran-build-dist (e.g., release-0.0.4)'
         required: true
@@ -81,16 +81,16 @@ jobs:
           
           
           declare -A SOURCE_VERSIONS=(
-            ["ran-base-dist"]="${{ github.event.inputs.ran-base-dist_source_version }}"
-            ["ios-mcn-cuup-dist"]="${{ github.event.inputs.ios-mcn-cuup-dist_source_version }}"
+            # ["ran-base-dist"]="${{ github.event.inputs.ran-base-dist_source_version }}"
+            # ["ios-mcn-cuup-dist"]="${{ github.event.inputs.ios-mcn-cuup-dist_source_version }}"
             ["ran-build-dist"]="${{ github.event.inputs.ran-build-dist_source_version }}"
             ["ios-mcn-gnb-dist"]="${{ github.event.inputs.ios-mcn-gnb-dist_source_version }}"
             ["ran-base-uni"]="${{ github.event.inputs.ran-base-uni_source_version }}"
             
           )
           declare -A TARGET_VERSIONS=(
-            ["ran-base-dist"]="${{ github.event.inputs.ran-base-dist_target_version }}"
-            ["ios-mcn-cuup-dist"]="${{ github.event.inputs.ios-mcn-cuup-dist_target_version }}"
+            # ["ran-base-dist"]="${{ github.event.inputs.ran-base-dist_target_version }}"
+            # ["ios-mcn-cuup-dist"]="${{ github.event.inputs.ios-mcn-cuup-dist_target_version }}"
             ["ran-build-dist"]="${{ github.event.inputs.ran-build-dist_target_version }}"
             ["ios-mcn-gnb-dist"]="${{ github.event.inputs.ios-mcn-gnb-dist_target_version }}"
             ["ran-base-uni"]="${{ github.event.inputs.ran-base-uni_target_version }}"
