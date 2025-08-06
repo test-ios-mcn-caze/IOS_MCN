@@ -75,7 +75,7 @@ jobs:
             TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
             
             SOURCE_IMAGE="ghcr.io/ios-mcn-ims/${PACKAGE}:${SOURCE_VERSION}" #change the name of organization
-            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/${PACKAGE}:${TARGET_VERSION}" #change the name of organization
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}" #change the name of organization
             
             echo "Processing ${PACKAGE}..."
             echo "Pulling ${SOURCE_IMAGE}..."
