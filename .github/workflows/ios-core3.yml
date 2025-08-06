@@ -1,4 +1,4 @@
-name: Pull, Retag, Compare, and Push Docker Images
+name: Pull, Retag, Compare, and Push IOS-MCN-CORE Docker Images
 
 on:
   workflow_dispatch:
@@ -27,14 +27,14 @@ on:
         description: 'Target Version for  upf-epc-pfcpiface'
         required: true
         default: 'release-ivybridge-0.1.4'
-      bess_build_source_version:
-        description: 'Source Version for bess-build'
-        required: true
-        default: 'release-0.0.2'
-      bess_build_target_version:
-        description: 'Target Version for bess-build'
-        required: true
-        default: 'release-0.0.2'
+      # bess_build_source_version:
+      #   description: 'Source Version for bess-build'
+      #   required: true
+      #   default: 'release-0.0.2'
+      # bess_build_target_version:
+      #   description: 'Target Version for bess-build'
+      #   required: true
+      #   default: 'release-0.0.2'
       
 
 jobs:
@@ -73,7 +73,7 @@ jobs:
             ["simapp"]="${{ github.event.inputs.simapp_source_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_source_version }}"
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_source_version }}"
-            ["bess_build"]="${{ github.event.inputs.bess_build_source_version }}"
+            # ["bess_build"]="${{ github.event.inputs.bess_build_source_version }}"
             
           )
           
@@ -81,7 +81,7 @@ jobs:
             ["simapp"]="${{ github.event.inputs.simapp_target_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_target_version }}"
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_target_version }}"
-            ["bess_build"]="${{ github.event.inputs.bess_build_target_version }}"
+            # ["bess_build"]="${{ github.event.inputs.bess_build_target_version }}"
             
           )
           
@@ -90,7 +90,7 @@ jobs:
             TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
             
             SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${SOURCE_VERSION}"
-            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/${PACKAGE}:${TARGET_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
             
             echo "Processing ${PACKAGE}..."
             echo "Pulling ${SOURCE_IMAGE}..."
