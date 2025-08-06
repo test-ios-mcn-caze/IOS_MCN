@@ -6,43 +6,43 @@ on:
       ran-base-dist_source_version:
         description: 'Source Version tag for ran-base-dist (e.g., release-0.0.10)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ran-base-dist_target_version:
         description: 'Target Version tag for ran-base-dist (e.g., release-0.0.10)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ios-mcn-cuup-dist_source_version:
         description: 'Source Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ios-mcn-cuup-dist_target_version:
         description: 'Target Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ran-build-dist_source_version:
         description: 'Source Version tag for ran-build-dist (e.g., release-0.0.4)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ran-build-dist_target_version:
         description: 'Target Version tag for ran-build-dist (e.g., release-0.0.4)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ios-mcn-gnb-dist_source_version:
         description: 'Source Version tag for ios-mcn-gnb-dist (e.g., release-0.0.5)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ios-mcn-gnb-dist_target_version:
         description: 'Target Version tag for ios-mcn-gnb-dist (e.g., release-0.0.5)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ran-base-uni_source_version:
         description: 'Source Version tag for ran-base-uni (e.g., release-0.0.4)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ran-base-uni_target_version:
         description: 'Target Version tag for ran-base-uni (e.g., release-0.0.4)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
      
 
 jobs:
@@ -102,7 +102,7 @@ jobs:
             TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
             
             SOURCE_IMAGE="ghcr.io/ios-mcn-ran/${PACKAGE}:${SOURCE_VERSION}" #change the name of organization
-            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/${PACKAGE}:${TARGET_VERSION}" #change the name of organization
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}" #change the name of organization
             
             echo "Processing ${PACKAGE}..."
             echo "Pulling ${SOURCE_IMAGE}..."
