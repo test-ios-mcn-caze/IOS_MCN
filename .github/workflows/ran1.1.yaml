@@ -3,26 +3,26 @@ name: Pull, Retag, and Push Images from ios-mcn-ran
 on:
   workflow_dispatch:
     inputs:
-      ran-base-dist_version:
-        description: 'Version tag for ran-base-dist (e.g., release-0.0.10)'
-        required: true
-        default: 'v0.1.4.rc3'
-      ios-mcn-cuup-dist_version:
-        description: 'Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
-        required: true
-        default: 'v0.1.4.rc3'
+      # ran-base-dist_version:
+      #   description: 'Version tag for ran-base-dist (e.g., release-0.0.10)'
+      #   required: true
+      #   default: 'v0.1.4.rc4'
+      # ios-mcn-cuup-dist_version:
+      #   description: 'Version tag for ios-mcn-cuup-dist (e.g., release-0.0.6)'
+      #   required: true
+      #   default: 'v0.1.4.rc4'
       ran-build-dist_version:
         description: 'Version tag for ran-build-dist (e.g., release-0.0.4)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ios-mcn-gnb-dist_version:
         description: 'Version tag for ios-mcn-gnb-dist (e.g., release-0.0.5)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
       ran-base-uni_version:
         description: 'Version tag for ran-base-uni (e.g., release-0.0.4)'
         required: true
-        default: 'v0.1.4.rc3'
+        default: 'v0.1.4.rc4'
      
 
 jobs:
@@ -49,8 +49,8 @@ jobs:
           
           declare -A RAN_PACKAGES
           RAN_PACKAGES=(
-            ["ran-base-dist"]="${{ github.event.inputs.ran-base-dist_version }}"
-            ["ios-mcn-cuup-dist"]="${{ github.event.inputs.ios-mcn-cuup-dist_version }}"
+            # ["ran-base-dist"]="${{ github.event.inputs.ran-base-dist_version }}"
+            # ["ios-mcn-cuup-dist"]="${{ github.event.inputs.ios-mcn-cuup-dist_version }}"
             ["ran-build-dist"]="${{ github.event.inputs.ran-build-dist_version }}"
             ["ios-mcn-gnb-dist"]="${{ github.event.inputs.ios-mcn-gnb-dist_version }}"
             ["ran-base-uni"]="${{ github.event.inputs.ran-base-uni_version }}"
