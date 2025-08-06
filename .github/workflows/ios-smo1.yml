@@ -1,48 +1,48 @@
-name: Pull, Retag, Compare, and Push Docker Images
+name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
 
 on:
   workflow_dispatch:
     inputs:
-      nonrtric-plt-a1policymanagementservice_source_version:
-        description: 'Source Version for nonrtric-plt-a1policymanagementservice'
-        required: true
-        default: '2.8.1'
-      nonrtric-plt-a1policymanagementservice_target_version:
-        description: 'Target Version for nonrtric-plt-a1policymanagementservice'
-        required: true
-        default: '2.8.1'
-      nonrtric-plt-rappcatalogue_source_version:
-        description: 'Source Version for nonrtric-plt-rappcatalogue'
-        required: true
-        default: '1.2.0'
-      nonrtric-plt-rappcatalogue_target_version:
-        description: 'Target Version for nonrtric-plt-rappcatalogue'
-        required: true
-        default: '1.2.0'
+      # nonrtric-plt-a1policymanagementservice_source_version:
+      #   description: 'Source Version for nonrtric-plt-a1policymanagementservice'
+      #   required: true
+      #   default: '2.8.1'
+      # nonrtric-plt-a1policymanagementservice_target_version:
+      #   description: 'Target Version for nonrtric-plt-a1policymanagementservice'
+      #   required: true
+      #   default: '2.8.1'
+      # nonrtric-plt-rappcatalogue_source_version:
+      #   description: 'Source Version for nonrtric-plt-rappcatalogue'
+      #   required: true
+      #   default: '1.2.0'
+      # nonrtric-plt-rappcatalogue_target_version:
+      #   description: 'Target Version for nonrtric-plt-rappcatalogue'
+      #   required: true
+      #   default: '1.2.0'
       nonrtric-plt-informationcoordinatorservice_source_version:
         description: 'Source Version for nonrtric-plt-informationcoordinatorservice'
         required: true
-        default: '1.5.0'
+        default: '1.5.1'
       nonrtric-plt-informationcoordinatorservice_target_version:
         description: 'Target Version for nonrtric-plt-informationcoordinatorservice'
         required: true
-        default: '1.5.0'
+        default: '1.5.1'
       nonrtric-plt-pmproducer_source_version:
         description: 'Source Version for nonrtric-plt-pmproducer'
         required: true
-        default: '1.0.1'
+        default: '1.0.2'
       nonrtric-plt-pmproducer_target_version:
         description: 'Target Version for nonrtric-plt-pmproducer'
         required: true
-        default: '1.0.1'
+        default: '1.0.2'
       nonrtric-plt-pmlog_source_version:
         description: 'Source Version for nonrtric-plt-pmlog'
         required: true
-        default: '1.0.0'
+        default: '1.0.1'
       nonrtric-plt-pmlog_target_version:
         description: 'Target Version for nonrtric-plt-pmlog'
         required: true
-        default: '1.0.0'
+        default: '1.0.1'
 
 jobs:
   pull_retag_compare_push:
@@ -77,16 +77,16 @@ jobs:
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
-            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_source_version }}"
-            ["nonrtric-plt-rappcatalogue"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue_source_version }}"
+            # ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_source_version }}"
+            # ["nonrtric-plt-rappcatalogue"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue_source_version }}"
             ["nonrtric-plt-informationcoordinatorservice"]="${{ github.event.inputs.nonrtric-plt-informationcoordinatorservice_source_version }}"
             ["nonrtric-plt-pmproducer"]="${{ github.event.inputs.nonrtric-plt-pmproducer_source_version }}"
             ["nonrtric-plt-pmlog"]="${{ github.event.inputs.nonrtric-plt-pmlog_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
-            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_target_version }}"
-            ["nonrtric-plt-rappcatalogue"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue_target_version }}"
+            # ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_target_version }}"
+            # ["nonrtric-plt-rappcatalogue"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue_target_version }}"
             ["nonrtric-plt-informationcoordinatorservice"]="${{ github.event.inputs.nonrtric-plt-informationcoordinatorservice_target_version }}"
             ["nonrtric-plt-pmproducer"]="${{ github.event.inputs.nonrtric-plt-pmproducer_target_version }}"
             ["nonrtric-plt-pmlog"]="${{ github.event.inputs.nonrtric-plt-pmlog_target_version }}"
@@ -97,7 +97,7 @@ jobs:
             TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
             
             SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${SOURCE_VERSION}"
-            TARGET_IMAGE="ghcr.io/test-ios-mcn-caze/${PACKAGE}:${TARGET_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
             
             echo "Processing ${PACKAGE}..."
             echo "Pulling ${SOURCE_IMAGE}..."
