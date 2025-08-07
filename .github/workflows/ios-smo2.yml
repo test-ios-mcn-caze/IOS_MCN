@@ -3,46 +3,46 @@ name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
 on:
   workflow_dispatch:
     inputs:
-      # nonrtric-plt-dmaapadapter_source_version:
-      #   description: 'Source Version for nonrtric-plt-dmaapadapter'
+      nonrtric-plt-dmaapadapter_source_version:
+        description: 'Source Version for nonrtric-plt-dmaapadapter'
+        required: true
+        default: '1.4.1'
+      nonrtric-plt-dmaapadapter_target_version:
+        description: 'Target Version for nonrtric-plt-dmaapadapter'
+        required: true
+        default: '1.4.1'
+      # ves-collector_source_version:
+      #   description: 'Source Version for ves-collector'
       #   required: true
-      #   default: '1.4.0'
-      # nonrtric-plt-dmaapadapter_target_version:
-      #   description: 'Target Version for nonrtric-plt-dmaapadapter'
+      #   default: '1.12.4'
+      # ves-collector_target_version:
+      #   description: 'Target Version for ves-collector'
       #   required: true
-      #   default: '1.4.0'
-      ves-collector_source_version:
-        description: 'Source Version for ves-collector'
-        required: true
-        default: '1.12.4'
-      ves-collector_target_version:
-        description: 'Target Version for ves-collector'
-        required: true
-        default: '1.12.4'
-      pm-file-converter_source_version:
-        description: 'Source Version for pm-file-converter'
-        required: true
-        default: '1.2.1'
-      pm-file-converter_target_version:
-        description: 'Target Version for pm-file-converter'
-        required: true
-        default: '1.2.1'
-      nonrtric-gateway_source_version:
-        description: 'Source Version for nonrtric-gateway'
-        required: true
-        default: '1.2.1'
-      nonrtric-gateway_target_version:
-        description: 'Target Version for nonrtric-gateway'
-        required: true
-        default: '1.2.1'
-      nonrtric-controlpanel_source_version:
-        description: 'Source Version for nonrtric-controlpanel'
-        required: true
-        default: '2.5.1'
-      nonrtric-controlpanel_target_version:
-        description: 'Target Version for nonrtric-controlpanel'
-        required: true
-        default: '2.5.1'
+      #   default: '1.12.4'
+      # pm-file-converter_source_version:
+      #   description: 'Source Version for pm-file-converter'
+      #   required: true
+      #   default: '1.2.1'
+      # pm-file-converter_target_version:
+      #   description: 'Target Version for pm-file-converter'
+      #   required: true
+      #   default: '1.2.1'
+      # nonrtric-gateway_source_version:
+      #   description: 'Source Version for nonrtric-gateway'
+      #   required: true
+      #   default: '1.2.1'
+      # nonrtric-gateway_target_version:
+      #   description: 'Target Version for nonrtric-gateway'
+      #   required: true
+      #   default: '1.2.1'
+      # nonrtric-controlpanel_source_version:
+      #   description: 'Source Version for nonrtric-controlpanel'
+      #   required: true
+      #   default: '2.5.1'
+      # nonrtric-controlpanel_target_version:
+      #   description: 'Target Version for nonrtric-controlpanel'
+      #   required: true
+      #   default: '2.5.1'
 
 jobs:
   pull_retag_compare_push:
@@ -76,19 +76,19 @@ jobs:
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
-            # ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric-plt-dmaapadapter_source_version }}"
-            ["ves-collector"]="${{ github.event.inputs.ves-collector_source_version }}"
-            ["pm-file-converter"]="${{ github.event.inputs.pm-file-converter_source_version }}"
-            ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric-gateway_source_version }}"
-            ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric-controlpanel_source_version }}"
+            ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric-plt-dmaapadapter_source_version }}"
+            # ["ves-collector"]="${{ github.event.inputs.ves-collector_source_version }}"
+            # ["pm-file-converter"]="${{ github.event.inputs.pm-file-converter_source_version }}"
+            # ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric-gateway_source_version }}"
+            # ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric-controlpanel_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
-            # ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric-plt-dmaapadapter_target_version }}"
-            ["ves-collector"]="${{ github.event.inputs.ves-collector_target_version }}"
-            ["pm-file-converter"]="${{ github.event.inputs.pm-file-converter_target_version }}"
-            ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric-gateway_target_version }}"
-            ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric-controlpanel_target_version }}"
+            ["nonrtric-plt-dmaapadapter"]="${{ github.event.inputs.nonrtric-plt-dmaapadapter_target_version }}"
+            # ["ves-collector"]="${{ github.event.inputs.ves-collector_target_version }}"
+            # ["pm-file-converter"]="${{ github.event.inputs.pm-file-converter_target_version }}"
+            # ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric-gateway_target_version }}"
+            # ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric-controlpanel_target_version }}"
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
