@@ -54,7 +54,7 @@ jobs:
               <repositories>
                 <repository>
                   <id>github-source</id>
-                  <url>https://maven.pkg.github.com/Pipe-line-org/cscf-test</url>
+                  <url>https://maven.pkg.github.com/ios-mcn-ims/cscf</url>
                 </repository>
               </repositories>
             </profile>
@@ -94,11 +94,11 @@ jobs:
           exit 1
         fi
         
-    - name: Upload artifact to nivedita-releases
+    - name: Upload artifact to ios-mcn packages
       run: |
         FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
         
-        echo "📤 Uploading artifact to nivedita-releases repository"
+        echo "📤 Uploading artifact to ios-mcn packages repository"
         echo "Source file: $FILE"
         
         # Keep the original group ID instead of changing it
@@ -109,7 +109,7 @@ jobs:
           -Dpackaging=${{ github.event.inputs.packaging }} \
           -Dfile=$FILE \
           -DrepositoryId=github-target \
-          -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
+          -Durl=https://maven.pkg.github.com/ios-mcn/packages \
           -DgeneratePom=true
           
     - name: Done
