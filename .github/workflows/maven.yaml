@@ -1,80 +1,120 @@
-name: Transfer Maven Package from ios-mcn-ims
+name: Simple Maven Package Transfer
 
 on:
   workflow_dispatch:
     inputs:
+      group_id:
+        description: 'Group ID'
+        required: true
+        default: 'org.iosmcn'
       artifact_id:
-        description: 'Artifact ID to transfer'
+        description: 'Artifact ID'
         required: true
-        default: 'your-artifact-name'
+        default: 'pcscf'
       version:
-        description: 'Version to transfer'
+        description: 'Version'
         required: true
-        default: '1.0.0'
+        default: '0.0.1'
       packaging:
-        description: 'Package type (jar, war, etc.)'
+        description: 'Packaging (jar, war, etc)'
         required: true
         default: 'jar'
 
 jobs:
-  transfer-maven-package:
+  transfer:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
     
     steps:
-    - name: Checkout nivedita-releases repo
-      uses: actions/checkout@v4
-    
-    - name: Set up JDK 17
+    - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-        server-id: github-nivedita
-        server-username: GITHUB_ACTOR
-        server-password: GITHUB_TOKEN
-    
-    - name: Configure Maven for GitHub Packages
+        
+    - name: Configure Maven settings
       run: |
         mkdir -p ~/.m2
-        cat > ~/.m2/settings.xml << 'EOF'
+        cat > ~/.m2/settings.xml <<EOF
         <settings>
           <servers>
             <server>
               <id>github-source</id>
-              <username>${env.GITHUB_ACTOR}</username>
-              <password>${env.SOURCE_GITHUB_TOKEN}</password>
+              <username>${{ github.actor }}</username>
+              <password>${{ secrets.SOURCE_GITHUB_TOKEN }}</password>
             </server>
             <server>
-              <id>github-nivedita</id>
-              <username>${env.GITHUB_ACTOR}</username>
-              <password>${env.GITHUB_TOKEN}</password>
+              <id>github-target</id>
+              <username>${{ github.actor }}</username>
+              <password>${{ secrets.GITHUB_TOKEN }}</password>
             </server>
           </servers>
+          <profiles>
+            <profile>
+              <id>github</id>
+              <repositories>
+                <repository>
+                  <id>github-source</id>
+                  <url>https://maven.pkg.github.com/ios-mcn-ims/cscf</url>
+                </repository>
+              </repositories>
+            </profile>
+          </profiles>
+          <activeProfiles>
+            <activeProfile>github</activeProfile>
+          </activeProfiles>
         </settings>
         EOF
-    
-    - name: Download package from ios-mcn-ims
+        
+    - name: Download artifact using Maven
       run: |
-        mkdir -p temp
+        mkdir -p temp local-repo
+        
+        echo "📥 Downloading artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }}"
+        
+        mvn dependency:get \
+          -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
+          -Dtransitive=false \
+          -Dmaven.repo.local=./local-repo
+        
         mvn dependency:copy \
-          -Dartifact=com.github.ios-mcn-ims:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
+          -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -DoutputDirectory=./temp/ \
-          -DremoteRepositories=github-source::default::https://maven.pkg.github.com/ios-mcn-ims/*
-      env:
-        SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
-    
-    - name: Deploy to nivedita-releases
+          -Dmaven.repo.local=./local-repo \
+          -Dmdep.stripVersion=false
+        
+        # Verify the file was downloaded
+        FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        if [ -f "$FILE" ]; then
+          echo "✅ File downloaded successfully: $FILE"
+          ls -la ./temp/
+        else
+          echo "❌ File not found: $FILE"
+          echo "Available files in temp directory:"
+          ls -la ./temp/ || echo "temp directory is empty"
+          exit 1
+        fi
+        
+    - name: Upload artifact to ios-mcn packages
       run: |
+        FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        
+        echo "📤 Uploading artifact to ios-mcn packages repository"
+        echo "Source file: $FILE"
+        
+        # Keep the original group ID instead of changing it
         mvn deploy:deploy-file \
-          -DgroupId=com.github.nivedita-releases \
+          -DgroupId=${{ github.event.inputs.group_id }} \
           -DartifactId=${{ github.event.inputs.artifact_id }} \
           -Dversion=${{ github.event.inputs.version }} \
           -Dpackaging=${{ github.event.inputs.packaging }} \
-          -Dfile=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }} \
-          -DrepositoryId=github-nivedita \
-          -Durl=https://maven.pkg.github.com/nivedita-releases/maven-packages
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Cleanup
-      run: rm -rf temp
+          -Dfile=$FILE \
+          -DrepositoryId=github-target \
+          -Durl=https://maven.pkg.github.com/ios-mcn/packages \
+          -DgeneratePom=true
+          
+    - name: Done
+      run: echo "✅ Transfer complete!"
