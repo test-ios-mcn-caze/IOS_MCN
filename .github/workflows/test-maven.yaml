@@ -88,7 +88,7 @@ jobs:
           -Dpackaging=${{ github.event.inputs.packaging }} \
           -Dfile=$FILE \
           -DrepositoryId=github-target \
-          -Durl=https://maven.pkg.github.com/nivedita-releases/maven-packages \
+          -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
           -DgeneratePom=true
 
     - name: Done
