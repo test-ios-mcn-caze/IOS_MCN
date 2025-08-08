@@ -57,12 +57,6 @@ jobs:
                   <releases><enabled>true</enabled></releases>
                   <snapshots><enabled>true</enabled></snapshots>
                 </repository>
-                <repository>
-                  <id>central</id>
-                  <url>https://repo1.maven.apache.org/maven2</url>
-                  <releases><enabled>true</enabled></releases>
-                  <snapshots><enabled>false</enabled></snapshots>
-                </repository>
               </repositories>
             </profile>
           </profiles>
@@ -78,10 +72,19 @@ jobs:
     - name: Download package from Be-with-DevOps
       run: |
         mkdir -p temp
+        # Use dependency:get first to download to local repo, then copy
+        mvn dependency:get \
+          -Dartifact=org.opendaylight.netconf:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
+          -Dtransitive=false \
+          -Dmaven.repo.local=./local-repo
+        
+        # Copy from local repo to temp directory
         mvn dependency:copy \
           -Dartifact=org.opendaylight.netconf:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -DoutputDirectory=./temp/ \
-          -Dmdep.stripVersion=false
+          -Dmaven.repo.local=./local-repo \
+          -Dmdep.stripVersion=false \
+          -Dmdep.useRepositoryLayout=false
       env:
         SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
     
