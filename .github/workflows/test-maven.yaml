@@ -27,14 +27,14 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     steps:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-        
+
     - name: Configure Maven settings
       run: |
         mkdir -p ~/.m2
@@ -58,7 +58,7 @@ jobs:
               <repositories>
                 <repository>
                   <id>github-source</id>
-                  <url>https://maven.pkg.github.com/Pipe-line-org/cscf-test</url>
+                  <url>https://maven.pkg.github.com/ios-mcn-ims/cscf</url>
                 </repository>
               </repositories>
             </profile>
@@ -68,25 +68,24 @@ jobs:
           </activeProfiles>
         </settings>
         EOF
-        
+
     - name: Download artifact using Maven
       run: |
         mkdir -p temp local-repo
-        
+
         echo "📥 Downloading artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }}"
-        
+
         mvn dependency:get \
           -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -Dtransitive=false \
           -Dmaven.repo.local=./local-repo
-        
+
         mvn dependency:copy \
           -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -DoutputDirectory=./temp/ \
           -Dmaven.repo.local=./local-repo \
           -Dmdep.stripVersion=false
-        
-        # Verify the file was downloaded
+
         FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
         if [ -f "$FILE" ]; then
           echo "✅ File downloaded successfully: $FILE"
@@ -97,15 +96,14 @@ jobs:
           ls -la ./temp/ || echo "temp directory is empty"
           exit 1
         fi
-        
-    - name: Upload artifact to nivedita-releases
+
+    - name: Upload artifact to nivedita-releases GitHub Packages
       run: |
         FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
-        
-        echo "📤 Uploading artifact to nivedita-releases repository"
+
+        echo "📤 Uploading artifact to GitHub Packages (nivedita-releases/test-openairinterface5g)"
         echo "Source file: $FILE"
-        
-        # Keep the original group ID instead of changing it
+
         mvn deploy:deploy-file \
           -DgroupId=${{ github.event.inputs.group_id }} \
           -DartifactId=${{ github.event.inputs.artifact_id }} \
@@ -115,6 +113,6 @@ jobs:
           -DrepositoryId=github-target \
           -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
           -DgeneratePom=true
-          
+
     - name: Done
       run: echo "✅ Transfer complete!"
