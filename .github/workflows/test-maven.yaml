@@ -69,50 +69,89 @@ jobs:
         </settings>
         EOF
 
-    - name: Download artifact using Maven
+    - name: Download artifact and POM using Maven
       run: |
         mkdir -p temp local-repo
-
         echo "📥 Downloading artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }}"
-
-        mvn dependency:get \
-          -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
-          -Dtransitive=false \
-          -Dmaven.repo.local=./local-repo
-
+        
+        # Download main artifact
         mvn dependency:copy \
           -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -DoutputDirectory=./temp/ \
           -Dmaven.repo.local=./local-repo \
           -Dmdep.stripVersion=false
-
-        FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
-        if [ -f "$FILE" ]; then
-          echo "✅ File downloaded successfully: $FILE"
-          ls -la ./temp/
+        
+        # Download POM file
+        echo "📥 Downloading POM file"
+        mvn dependency:copy \
+          -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:pom \
+          -DoutputDirectory=./temp/ \
+          -Dmaven.repo.local=./local-repo \
+          -Dmdep.stripVersion=false || echo "⚠️ POM file not found, will generate one"
+        
+        # Check downloaded files
+        ARTIFACT_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        POM_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.pom
+        
+        if [ -f "$ARTIFACT_FILE" ]; then
+          echo "✅ Artifact downloaded successfully: $ARTIFACT_FILE"
         else
-          echo "❌ File not found: $FILE"
+          echo "❌ Artifact not found: $ARTIFACT_FILE"
           echo "Available files in temp directory:"
           ls -la ./temp/ || echo "temp directory is empty"
           exit 1
         fi
+        
+        if [ -f "$POM_FILE" ]; then
+          echo "✅ POM file downloaded successfully: $POM_FILE"
+        else
+          echo "⚠️ POM file not found, will generate during deployment"
+        fi
+        
+        echo "📂 All files in temp directory:"
+        ls -la ./temp/
 
     - name: Upload artifact to nivedita-releases GitHub Packages
       run: |
-        FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
-
+        ARTIFACT_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        POM_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.pom
+        
         echo "📤 Uploading artifact to GitHub Packages (nivedita-releases/test-openairinterface5g)"
-        echo "Source file: $FILE"
+        echo "Source artifact file: $ARTIFACT_FILE"
+        
+        # Check if POM file exists and deploy accordingly
+        if [ -f "$POM_FILE" ]; then
+          echo "📄 Using existing POM file: $POM_FILE"
+          mvn deploy:deploy-file \
+            -DgroupId=${{ github.event.inputs.group_id }} \
+            -DartifactId=${{ github.event.inputs.artifact_id }} \
+            -Dversion=${{ github.event.inputs.version }} \
+            -Dpackaging=${{ github.event.inputs.packaging }} \
+            -Dfile=$ARTIFACT_FILE \
+            -DpomFile=$POM_FILE \
+            -DrepositoryId=github-target \
+            -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
+            -Dmaven.repo.local=./local-repo
+        else
+          echo "📄 Generating POM file during deployment"
+          mvn deploy:deploy-file \
+            -DgroupId=${{ github.event.inputs.group_id }} \
+            -DartifactId=${{ github.event.inputs.artifact_id }} \
+            -Dversion=${{ github.event.inputs.version }} \
+            -Dpackaging=${{ github.event.inputs.packaging }} \
+            -Dfile=$ARTIFACT_FILE \
+            -DrepositoryId=github-target \
+            -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
+            -DgeneratePom=true \
+            -Dmaven.repo.local=./local-repo
+        fi
 
-        mvn deploy:deploy-file \
-          -DgroupId=${{ github.event.inputs.group_id }} \
-          -DartifactId=${{ github.event.inputs.artifact_id }} \
-          -Dversion=${{ github.event.inputs.version }} \
-          -Dpackaging=${{ github.event.inputs.packaging }} \
-          -Dfile=$FILE \
-          -DrepositoryId=github-target \
-          -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
-          -DgeneratePom=true
-
-    - name: Done
-      run: echo "✅ Transfer complete!"
+    - name: Verify upload
+      run: |
+        echo "✅ Transfer complete!"
+        echo "📋 Summary:"
+        echo "   Group ID: ${{ github.event.inputs.group_id }}"
+        echo "   Artifact ID: ${{ github.event.inputs.artifact_id }}"
+        echo "   Version: ${{ github.event.inputs.version }}"
+        echo "   Packaging: ${{ github.event.inputs.packaging }}"
+        echo "   Target: https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g"
