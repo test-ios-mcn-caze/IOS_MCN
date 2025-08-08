@@ -48,16 +48,23 @@ jobs:
               <password>${env.GITHUB_TOKEN}</password>
             </server>
           </servers>
+          <repositories>
+            <repository>
+              <id>github-source</id>
+              <url>https://maven.pkg.github.com/Be-with-DevOps/demo-netconf-test.2</url>
+            </repository>
+          </repositories>
         </settings>
         EOF
+      env:
+        SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
     
     - name: Download package from Be-with-DevOps
       run: |
         mkdir -p temp
         mvn dependency:copy \
           -Dartifact=org.opendaylight.netconf:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
-          -DoutputDirectory=./temp/ \
-          -DremoteRepositories=github-source::default::https://maven.pkg.github.com/Be-with-DevOps/*
+          -DoutputDirectory=./temp/
       env:
         SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
     
