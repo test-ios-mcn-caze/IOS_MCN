@@ -18,21 +18,18 @@ on:
         description: 'Packaging (jar, war, etc)'
         required: true
         default: 'jar'
-
 jobs:
   transfer:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     steps:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-
     - name: Configure Maven settings for source repository
       run: |
         mkdir -p ~/.m2
@@ -66,7 +63,6 @@ jobs:
           </activeProfiles>
         </settings>
         EOF
-
     - name: Download artifact and POM using Maven
       run: |
         mkdir -p temp local-repo
@@ -108,10 +104,9 @@ jobs:
           -DoutputDirectory=./temp/ \
           -Dmaven.repo.local=./local-repo \
           -Dmdep.stripVersion=false || echo "⚠️ POM file not found in source, will generate one if needed"
-
+        
         echo "📂 All files in temp directory before upload:"
         ls -la ./temp/
-
     - name: Create isolated Maven settings for deployment
       run: |
         mkdir -p ~/.m2/deploy
@@ -126,11 +121,9 @@ jobs:
           </servers>
         </settings>
         EOF
-
     - name: Upload artifact to nivedita-releases GitHub Packages
       run: |
         ARTIFACT_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
-        POM_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.pom
         
         echo "📤 Uploading artifact to GitHub Packages (nivedita-releases/test-openairinterface5g)"
         echo "Source artifact file: $ARTIFACT_FILE"
@@ -138,39 +131,23 @@ jobs:
         # Create a clean local repository for deployment
         mkdir -p ./deploy-repo
         
-        # Check if POM file exists and deploy accordingly
-        if [ -f "$POM_FILE" ]; then
-          echo "📄 Using existing POM file: $POM_FILE"
-          mvn deploy:deploy-file \
-            -DgroupId=${{ github.event.inputs.group_id }} \
-            -DartifactId=${{ github.event.inputs.artifact_id }} \
-            -Dversion=${{ github.event.inputs.version }} \
-            -Dpackaging=${{ github.event.inputs.packaging }} \
-            -Dfile=$ARTIFACT_FILE \
-            -DpomFile=$POM_FILE \
-            -DrepositoryId=github-target \
-            -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
-            -Dmaven.repo.local=./deploy-repo \
-            -s ~/.m2/deploy/settings.xml \
-            --batch-mode \
-            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-        else
-          echo "📄 Generating POM file during deployment"
-          mvn deploy:deploy-file \
-            -DgroupId=${{ github.event.inputs.group_id }} \
-            -DartifactId=${{ github.event.inputs.artifact_id }} \
-            -Dversion=${{ github.event.inputs.version }} \
-            -Dpackaging=${{ github.event.inputs.packaging }} \
-            -Dfile=$ARTIFACT_FILE \
-            -DrepositoryId=github-target \
-            -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
-            -DgeneratePom=true \
-            -Dmaven.repo.local=./deploy-repo \
-            -s ~/.m2/deploy/settings.xml \
-            --batch-mode \
-            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-        fi
-
+        echo "📄 Generating POM file during deployment..."
+        
+        # Deploy the artifact, forcing a POM to be generated.
+        # This bypasses any issues with the downloaded POM file.
+        mvn deploy:deploy-file \
+          -DgroupId=${{ github.event.inputs.group_id }} \
+          -DartifactId=${{ github.event.inputs.artifact_id }} \
+          -Dversion=${{ github.event.inputs.version }} \
+          -Dpackaging=${{ github.event.inputs.packaging }} \
+          -Dfile=$ARTIFACT_FILE \
+          -DrepositoryId=github-target \
+          -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
+          -DgeneratePom=true \
+          -Dmaven.repo.local=./deploy-repo \
+          -s ~/.m2/deploy/settings.xml \
+          --batch-mode \
+          -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
     - name: Verify upload
       run: |
         echo "✅ Transfer complete!"
