@@ -3,6 +3,10 @@ name: Transfer Maven Package from Be-with-DevOps
 on:
   workflow_dispatch:
     inputs:
+      group_id:
+        description: 'Group ID'
+        required: true
+        default: 'org.opendaylight.netconf'
       artifact_id:
         description: 'Artifact ID to transfer'
         required: true
@@ -69,48 +73,214 @@ jobs:
         SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
-    - name: Download package from Be-with-DevOps
+    - name: Verify source repository access and list packages
       run: |
-        mkdir -p temp
-        # Use dependency:get first to download to local repo, then copy
-        mvn dependency:get \
-          -Dartifact=org.opendaylight.netconf:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
-          -Dtransitive=false \
-          -Dmaven.repo.local=./local-repo
+        echo "Testing source repository access..."
+        echo "Repository: Be-with-DevOps/demo-netconf-test.2"
         
-        # Copy from local repo to temp directory
-        mvn dependency:copy \
-          -Dartifact=org.opendaylight.netconf:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
-          -DoutputDirectory=./temp/ \
+        # Test repository access
+        REPO_STATUS=$(curl -s -H "Authorization: token ${{ secrets.SOURCE_GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/Be-with-DevOps/demo-netconf-test.2" \
+          -w "%{http_code}" -o /dev/null)
+        echo "Repository access status: $REPO_STATUS"
+        
+        # List available packages
+        echo "Available Maven packages:"
+        curl -H "Authorization: token ${{ secrets.SOURCE_GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/Be-with-DevOps/demo-netconf-test.2/packages?package_type=maven" | \
+          jq -r '.[] | "📦 " + .name + " | Version: " + (.versions[0].name // "N/A") + " | Updated: " + (.versions[0].updated_at // "N/A")' || echo "Failed to list packages via API"
+    
+    - name: Check if specific artifact exists
+      id: check_artifact
+      run: |
+        echo "Checking if artifact exists..."
+        echo "Looking for: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}"
+        
+        # Convert group ID to path format (org.opendaylight.netconf -> org/opendaylight/netconf)
+        GROUP_PATH=$(echo "${{ github.event.inputs.group_id }}" | tr '.' '/')
+        ARTIFACT_URL="https://maven.pkg.github.com/Be-with-DevOps/demo-netconf-test.2/$GROUP_PATH/${{ github.event.inputs.artifact_id }}/${{ github.event.inputs.version }}/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}"
+        
+        echo "Testing URL: $ARTIFACT_URL"
+        
+        HTTP_CODE=$(curl -H "Authorization: token ${{ secrets.SOURCE_GITHUB_TOKEN }}" \
+          "$ARTIFACT_URL" \
+          -w "%{http_code}" \
+          -o /dev/null \
+          -s)
+        
+        echo "HTTP response code: $HTTP_CODE"
+        if [ "$HTTP_CODE" -eq 200 ]; then
+          echo "artifact_exists=true" >> $GITHUB_OUTPUT
+          echo "✅ Artifact is accessible via direct URL"
+        else
+          echo "artifact_exists=direct_failed" >> $GITHUB_OUTPUT
+          echo "⚠️ Direct URL access failed (HTTP $HTTP_CODE), will try Maven resolution"
+        fi
+    
+    - name: Download package using Maven dependency:get
+      run: |
+        mkdir -p temp local-repo
+        
+        echo "🔄 Attempting to download using Maven dependency:get..."
+        echo "Artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }}"
+        
+        # First, try to resolve and download the artifact
+        mvn dependency:get \
+          -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
+          -Dtransitive=false \
           -Dmaven.repo.local=./local-repo \
-          -Dmdep.stripVersion=false \
-          -Dmdep.useRepositoryLayout=false
+          -Dmdep.silent=false \
+          -X
+        
+        if [ $? -eq 0 ]; then
+          echo "✅ Maven dependency:get succeeded"
+          
+          # Now copy the artifact to our temp directory
+          echo "📦 Copying artifact to temp directory..."
+          mvn dependency:copy \
+            -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
+            -DoutputDirectory=./temp/ \
+            -Dmaven.repo.local=./local-repo \
+            -Dmdep.stripVersion=false \
+            -Dmdep.useRepositoryLayout=false
+        else
+          echo "❌ Maven dependency:get failed"
+          exit 1
+        fi
+      env:
+        SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
+    
+    - name: Alternative direct download (fallback)
+      if: failure()
+      run: |
+        echo "⚠️ Maven method failed, trying direct HTTP download..."
+        mkdir -p temp
+        
+        GROUP_PATH=$(echo "${{ github.event.inputs.group_id }}" | tr '.' '/')
+        DOWNLOAD_URL="https://maven.pkg.github.com/Be-with-DevOps/demo-netconf-test.2/$GROUP_PATH/${{ github.event.inputs.artifact_id }}/${{ github.event.inputs.version }}/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}"
+        
+        echo "📥 Downloading from: $DOWNLOAD_URL"
+        
+        curl -H "Authorization: token ${{ secrets.SOURCE_GITHUB_TOKEN }}" \
+          "$DOWNLOAD_URL" \
+          -o "./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}" \
+          -f \
+          --show-error \
+          --location \
+          --progress-bar
+        
+        if [ $? -eq 0 ]; then
+          echo "✅ Direct download succeeded"
+        else
+          echo "❌ Direct download also failed"
+          echo "Trying alternative URL formats..."
+          
+          # Try without group path conversion
+          ALT_URL="https://maven.pkg.github.com/Be-with-DevOps/demo-netconf-test.2/${{ github.event.inputs.group_id }}/${{ github.event.inputs.artifact_id }}/${{ github.event.inputs.version }}/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}"
+          echo "Trying: $ALT_URL"
+          
+          curl -H "Authorization: token ${{ secrets.SOURCE_GITHUB_TOKEN }}" \
+            "$ALT_URL" \
+            -o "./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}" \
+            -f \
+            --show-error \
+            --location \
+            --progress-bar || exit 1
+        fi
       env:
         SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
     
     - name: Verify downloaded file
       run: |
+        echo "📂 Contents of temp directory:"
         ls -la temp/
-        FILE_PATH="./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}"
-        if [ ! -f "$FILE_PATH" ]; then
-          echo "Error: Downloaded file not found at $FILE_PATH"
+        
+        EXPECTED_FILE="./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}"
+        
+        if [ ! -f "$EXPECTED_FILE" ]; then
+          echo "❌ Expected file not found: $EXPECTED_FILE"
+          echo "Available files:"
+          find temp -type f -name "*" 2>/dev/null || echo "No files found"
+          
+          # Check if there's any file that might be our artifact
+          FOUND_FILE=$(find temp -name "*${{ github.event.inputs.artifact_id }}*" -type f | head -1)
+          if [ -n "$FOUND_FILE" ]; then
+            echo "Found similar file: $FOUND_FILE"
+            echo "Renaming to expected filename..."
+            mv "$FOUND_FILE" "$EXPECTED_FILE"
+          else
+            exit 1
+          fi
+        fi
+        
+        FILE_SIZE=$(stat -f%z "$EXPECTED_FILE" 2>/dev/null || stat -c%s "$EXPECTED_FILE")
+        echo "✅ File verification successful:"
+        echo "   📁 Path: $EXPECTED_FILE"
+        echo "   📏 Size: $FILE_SIZE bytes"
+        
+        if [ "$FILE_SIZE" -eq 0 ]; then
+          echo "❌ Error: File is empty"
           exit 1
         fi
-        echo "File successfully downloaded: $FILE_PATH"
+        
+        # Show file type information
+        file "$EXPECTED_FILE" || echo "File type detection not available"
     
     - name: Deploy to nivedita-releases
       run: |
+        echo "🚀 Deploying to nivedita-releases repository..."
+        
+        FILE_PATH="./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}"
+        TARGET_REPO="https://maven.pkg.github.com/nivedita-releases/maven-packages"
+        
+        echo "📤 Source file: $FILE_PATH"
+        echo "🎯 Target repo: $TARGET_REPO"
+        echo "🏷️ Target coordinates: com.github.nivedita-releases:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}"
+        
         mvn deploy:deploy-file \
           -DgroupId=com.github.nivedita-releases \
           -DartifactId=${{ github.event.inputs.artifact_id }} \
           -Dversion=${{ github.event.inputs.version }} \
           -Dpackaging=${{ github.event.inputs.packaging }} \
-          -Dfile=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }} \
+          -Dfile="$FILE_PATH" \
           -DrepositoryId=github-nivedita \
-          -Durl=https://maven.pkg.github.com/nivedita-releases/maven-packages \
-          -DgeneratePom=true
+          -Durl="$TARGET_REPO" \
+          -DgeneratePom=true \
+          -Dmdep.silent=false
+        
+        echo "✅ Successfully deployed to nivedita-releases!"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
+    - name: Transfer Summary
+      if: always()
+      run: |
+        echo ""
+        echo "═══════════════════════════════════════════════"
+        echo "🔄 MAVEN PACKAGE TRANSFER SUMMARY"
+        echo "═══════════════════════════════════════════════"
+        echo "📍 Source Repository: Be-with-DevOps/demo-netconf-test.2"
+        echo "📦 Artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}"
+        echo "🎯 Target Repository: nivedita-releases/maven-packages"
+        echo "🏷️ New Coordinates: com.github.nivedita-releases:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}"
+        
+        if [ -f "./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}" ]; then
+          echo "✅ Status: SUCCESS - Package transferred successfully!"
+          echo ""
+          echo "🔧 To use in your project, add to pom.xml:"
+          echo "<dependency>"
+          echo "  <groupId>com.github.nivedita-releases</groupId>"
+          echo "  <artifactId>${{ github.event.inputs.artifact_id }}</artifactId>"
+          echo "  <version>${{ github.event.inputs.version }}</version>"
+          echo "</dependency>"
+        else
+          echo "❌ Status: FAILED - Package transfer unsuccessful"
+        fi
+        echo "═══════════════════════════════════════════════"
+    
     - name: Cleanup
-      run: rm -rf temp
+      if: always()
+      run: |
+        echo "🧹 Cleaning up temporary files..."
+        rm -rf temp local-repo
+        echo "✅ Cleanup completed"
