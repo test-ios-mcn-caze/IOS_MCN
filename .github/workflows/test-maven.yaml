@@ -1,59 +1,177 @@
-name: Copy Maven Package
- 
+name: Simple Maven Package Transfer
+
 on:
-  workflow_dispatch: # Trigger manually from GitHub UI
+  workflow_dispatch:
     inputs:
-      version:
-        description: "Package version to copy"
+      group_id:
+        description: 'Group ID'
         required: true
-        default: "0.0.1"
- 
+        default: 'org.iosmcn'
+      artifact_id:
+        description: 'Artifact ID'
+        required: true
+        default: 'pcscf'
+      version:
+        description: 'Version'
+        required: true
+        default: '0.0.1'
+      packaging:
+        description: 'Packaging (jar, war, etc)'
+        required: true
+        default: 'jar'
+
 jobs:
-  copy-package:
+  transfer:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - name: Checkout (empty repo, just for workspace)
-        uses: actions/checkout@v4
- 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
- 
-      - name: Download artifacts from old org
-        run: |
-          BASE_URL="https://maven.pkg.github.com"
-          PACKAGE_GROUP="org.iosmcn"
-          PACKAGE_ARTIFACT="pcscf"
-          PACKAGE_VERSION="${{ github.event.inputs.version }}"
- 
-          mkdir artifacts && cd artifacts
-          echo "📥 Downloading $PACKAGE_ARTIFACT:$PACKAGE_VERSION from ios-mcn-ims..."
-          curl -u ${{ secrets.OLD_ORG_USERNAME }}:${{ secrets.OLD_ORG_TOKEN }} \
-            -O "$BASE_URL/ios-mcn-ims/$PACKAGE_GROUP/$PACKAGE_ARTIFACT/$PACKAGE_VERSION/$PACKAGE_ARTIFACT-$PACKAGE_VERSION.jar"
-          curl -u ${{ secrets.OLD_ORG_USERNAME }}:${{ secrets.OLD_ORG_TOKEN }} \
-            -O "$BASE_URL/ios-mcn-ims/$PACKAGE_GROUP/$PACKAGE_ARTIFACT/$PACKAGE_VERSION/$PACKAGE_ARTIFACT-$PACKAGE_VERSION.pom"
- 
-      - name: Upload to new org
-        run: |
-          BASE_URL="https://maven.pkg.github.com"
-          PACKAGE_GROUP="org.iosmcn"
-          PACKAGE_ARTIFACT="pcscf"
-          PACKAGE_VERSION="${{ github.event.inputs.version }}"
- 
-          echo "📤 Uploading to ios-mcn..."
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Configure Maven settings
+      run: |
+        mkdir -p ~/.m2
+        cat > ~/.m2/settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+              <id>github-source</id>
+              <username>${{ github.actor }}</username>
+              <password>${{ secrets.SOURCE_GITHUB_TOKEN }}</password>
+            </server>
+            <server>
+              <id>github-target</id>
+              <username>${{ github.actor }}</username>
+              <password>${{ secrets.GITHUB_TOKEN }}</password>
+            </server>
+          </servers>
+          <profiles>
+            <profile>
+              <id>github</id>
+              <repositories>
+                <repository>
+                  <id>github-source</id>
+                  <url>https://maven.pkg.github.com/ios-mcn-ims/cscf</url>
+                </repository>
+              </repositories>
+            </profile>
+          </profiles>
+          <activeProfiles>
+            <activeProfile>github</activeProfile>
+          </activeProfiles>
+        </settings>
+        EOF
+    - name: Download artifact and POM using Maven
+      run: |
+        mkdir -p temp local-repo
+        echo "📥 Downloading artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }}"
+        
+        # Download main artifact
+        mvn dependency:copy \
+          -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
+          -DoutputDirectory=./temp/ \
+          -Dmaven.repo.local=./local-repo \
+          -Dmdep.stripVersion=false
+        
+        # Download POM file
+        echo "📥 Downloading POM file"
+        mvn dependency:copy \
+          -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:pom \
+          -DoutputDirectory=./temp/ \
+          -Dmaven.repo.local=./local-repo \
+          -Dmdep.stripVersion=false || echo "⚠️ POM file not found, will generate one"
+        
+        # Check downloaded files
+        ARTIFACT_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        POM_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.pom
+        
+        if [ -f "$ARTIFACT_FILE" ]; then
+          echo "✅ Artifact downloaded successfully: $ARTIFACT_FILE"
+        else
+          echo "❌ Artifact not found: $ARTIFACT_FILE"
+          echo "Available files in temp directory:"
+          ls -la ./temp/ || echo "temp directory is empty"
+          exit 1
+        fi
+        
+        if [ -f "$POM_FILE" ]; then
+          echo "✅ POM file downloaded successfully: $POM_FILE"
+        else
+          echo "⚠️ POM file not found, will generate during deployment"
+        fi
+        
+        echo "📂 All files in temp directory:"
+        ls -la ./temp/
+    - name: Create isolated Maven settings for deployment
+      run: |
+        mkdir -p ~/.m2/deploy
+        cat > ~/.m2/deploy/settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+              <id>github-target</id>
+              <username>${{ github.actor }}</username>
+              <password>${{ secrets.GITHUB_TOKEN }}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+    - name: Upload artifact to nivedita-releases GitHub Packages
+      run: |
+        ARTIFACT_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        POM_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.pom
+        
+        echo "📤 Uploading artifact to GitHub Packages (nivedita-releases/test-openairinterface5g)"
+        echo "Source artifact file: $ARTIFACT_FILE"
+        
+        # Create a clean local repository for deployment
+        mkdir -p ./deploy-repo
+        
+        # Check if POM file exists and deploy accordingly
+        if [ -f "$POM_FILE" ]; then
+          echo "📄 Using existing POM file: $POM_FILE"
           mvn deploy:deploy-file \
-            -DgroupId="$PACKAGE_GROUP" \
-            -DartifactId="$PACKAGE_ARTIFACT" \
-            -Dversion="$PACKAGE_VERSION" \
-            -Dpackaging=jar \
-            -Dfile="artifacts/$PACKAGE_ARTIFACT-$PACKAGE_VERSION.jar" \
-            -DpomFile="artifacts/$PACKAGE_ARTIFACT-$PACKAGE_VERSION.pom" \
-            -DrepositoryId=github \
-            -Durl="$BASE_URL/ios-mcn/$PACKAGE_ARTIFACT" \
+            -DgroupId=${{ github.event.inputs.group_id }} \
+            -DartifactId=${{ github.event.inputs.artifact_id }} \
+            -Dversion=${{ github.event.inputs.version }} \
+            -Dpackaging=${{ github.event.inputs.packaging }} \
+            -Dfile=$ARTIFACT_FILE \
+            -DpomFile=$POM_FILE \
+            -DrepositoryId=github-target \
+            -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
+            -Dmaven.repo.local=./deploy-repo \
+            -s ~/.m2/deploy/settings.xml \
+            --batch-mode \
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        else
+          echo "📄 Generating POM file during deployment"
+          mvn deploy:deploy-file \
+            -DgroupId=${{ github.event.inputs.group_id }} \
+            -DartifactId=${{ github.event.inputs.artifact_id }} \
+            -Dversion=${{ github.event.inputs.version }} \
+            -Dpackaging=${{ github.event.inputs.packaging }} \
+            -Dfile=$ARTIFACT_FILE \
+            -DrepositoryId=github-target \
+            -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
             -DgeneratePom=false \
-            -DretryFailedDeploymentCount=3 \
-            -DuniqueVersion=false
-        env:
-          GITHUB_TOKEN: ${{ secrets.NEW_ORG_TOKEN }}
+            -Dmaven.repo.local=./deploy-repo \
+            -s ~/.m2/deploy/settings.xml \
+            --batch-mode \
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        fi
+    - name: Verify upload
+      run: |
+        echo "✅ Transfer complete!"
+        echo "📋 Summary:"
+        echo "   Group ID: ${{ github.event.inputs.group_id }}"
+        echo "   Artifact ID: ${{ github.event.inputs.artifact_id }}"
+        echo "   Version: ${{ github.event.inputs.version }}"
+        echo "   Packaging: ${{ github.event.inputs.packaging }}"
+        echo "   Target: https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g".
