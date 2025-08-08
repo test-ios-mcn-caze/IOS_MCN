@@ -1,0 +1,80 @@
+name: Transfer Maven Package from ios-mcn-ims
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_id:
+        description: 'Artifact ID to transfer'
+        required: true
+        default: 'your-artifact-name'
+      version:
+        description: 'Version to transfer'
+        required: true
+        default: '1.0.0'
+      packaging:
+        description: 'Package type (jar, war, etc.)'
+        required: true
+        default: 'jar'
+
+jobs:
+  transfer-maven-package:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout nivedita-releases repo
+      uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        server-id: github-nivedita
+        server-username: GITHUB_ACTOR
+        server-password: GITHUB_TOKEN
+    
+    - name: Configure Maven for GitHub Packages
+      run: |
+        mkdir -p ~/.m2
+        cat > ~/.m2/settings.xml << 'EOF'
+        <settings>
+          <servers>
+            <server>
+              <id>github-source</id>
+              <username>${env.GITHUB_ACTOR}</username>
+              <password>${env.SOURCE_GITHUB_TOKEN}</password>
+            </server>
+            <server>
+              <id>github-nivedita</id>
+              <username>${env.GITHUB_ACTOR}</username>
+              <password>${env.GITHUB_TOKEN}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+    
+    - name: Download package from ios-mcn-ims
+      run: |
+        mkdir -p temp
+        mvn dependency:copy \
+          -Dartifact=com.github.ios-mcn-ims:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
+          -DoutputDirectory=./temp/ \
+          -DremoteRepositories=github-source::default::https://maven.pkg.github.com/ios-mcn-ims/*
+      env:
+        SOURCE_GITHUB_TOKEN: ${{ secrets.SOURCE_GITHUB_TOKEN }}
+    
+    - name: Deploy to nivedita-releases
+      run: |
+        mvn deploy:deploy-file \
+          -DgroupId=com.github.nivedita-releases \
+          -DartifactId=${{ github.event.inputs.artifact_id }} \
+          -Dversion=${{ github.event.inputs.version }} \
+          -Dpackaging=${{ github.event.inputs.packaging }} \
+          -Dfile=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }} \
+          -DrepositoryId=github-nivedita \
+          -Durl=https://maven.pkg.github.com/nivedita-releases/maven-packages
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Cleanup
+      run: rm -rf temp
