@@ -23,14 +23,14 @@ on:
 jobs:
   transfer:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-
+        
     - name: Configure Maven settings
       run: |
         mkdir -p ~/.m2
@@ -39,12 +39,12 @@ jobs:
           <servers>
             <server>
               <id>github-source</id>
-              <username>${{ env.GITHUB_ACTOR }}</username>
+              <username>${{ github.actor }}</username>
               <password>${{ secrets.SOURCE_GITHUB_TOKEN }}</password>
             </server>
             <server>
               <id>github-target</id>
-              <username>${{ env.GITHUB_ACTOR }}</username>
+              <username>${{ github.actor }}</username>
               <password>${{ secrets.GITHUB_TOKEN }}</password>
             </server>
           </servers>
@@ -64,25 +64,46 @@ jobs:
           </activeProfiles>
         </settings>
         EOF
-
+        
     - name: Download artifact using Maven
       run: |
         mkdir -p temp local-repo
+        
+        echo "📥 Downloading artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }}"
+        
         mvn dependency:get \
           -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -Dtransitive=false \
           -Dmaven.repo.local=./local-repo
+        
         mvn dependency:copy \
           -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -DoutputDirectory=./temp/ \
           -Dmaven.repo.local=./local-repo \
           -Dmdep.stripVersion=false
-
+        
+        # Verify the file was downloaded
+        FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        if [ -f "$FILE" ]; then
+          echo "✅ File downloaded successfully: $FILE"
+          ls -la ./temp/
+        else
+          echo "❌ File not found: $FILE"
+          echo "Available files in temp directory:"
+          ls -la ./temp/ || echo "temp directory is empty"
+          exit 1
+        fi
+        
     - name: Upload artifact to nivedita-releases
       run: |
         FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
+        
+        echo "📤 Uploading artifact to nivedita-releases repository"
+        echo "Source file: $FILE"
+        
+        # Keep the original group ID instead of changing it
         mvn deploy:deploy-file \
-          -DgroupId=com.github.nivedita-releases \
+          -DgroupId=${{ github.event.inputs.group_id }} \
           -DartifactId=${{ github.event.inputs.artifact_id }} \
           -Dversion=${{ github.event.inputs.version }} \
           -Dpackaging=${{ github.event.inputs.packaging }} \
@@ -90,6 +111,6 @@ jobs:
           -DrepositoryId=github-target \
           -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
           -DgeneratePom=true
-
+          
     - name: Done
       run: echo "✅ Transfer complete!"
