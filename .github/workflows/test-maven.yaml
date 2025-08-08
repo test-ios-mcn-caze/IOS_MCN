@@ -111,6 +111,21 @@ jobs:
         echo "📂 All files in temp directory:"
         ls -la ./temp/
 
+    - name: Create isolated Maven settings for deployment
+      run: |
+        mkdir -p ~/.m2/deploy
+        cat > ~/.m2/deploy/settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+              <id>github-target</id>
+              <username>${{ github.actor }}</username>
+              <password>${{ secrets.GITHUB_TOKEN }}</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+
     - name: Upload artifact to nivedita-releases GitHub Packages
       run: |
         ARTIFACT_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
@@ -118,6 +133,9 @@ jobs:
         
         echo "📤 Uploading artifact to GitHub Packages (nivedita-releases/test-openairinterface5g)"
         echo "Source artifact file: $ARTIFACT_FILE"
+        
+        # Create a clean local repository for deployment
+        mkdir -p ./deploy-repo
         
         # Check if POM file exists and deploy accordingly
         if [ -f "$POM_FILE" ]; then
@@ -131,7 +149,10 @@ jobs:
             -DpomFile=$POM_FILE \
             -DrepositoryId=github-target \
             -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
-            -Dmaven.repo.local=./local-repo
+            -Dmaven.repo.local=./deploy-repo \
+            -s ~/.m2/deploy/settings.xml \
+            --batch-mode \
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
         else
           echo "📄 Generating POM file during deployment"
           mvn deploy:deploy-file \
@@ -143,7 +164,10 @@ jobs:
             -DrepositoryId=github-target \
             -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
             -DgeneratePom=true \
-            -Dmaven.repo.local=./local-repo
+            -Dmaven.repo.local=./deploy-repo \
+            -s ~/.m2/deploy/settings.xml \
+            --batch-mode \
+            -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
         fi
 
     - name: Verify upload
@@ -154,4 +178,4 @@ jobs:
         echo "   Artifact ID: ${{ github.event.inputs.artifact_id }}"
         echo "   Version: ${{ github.event.inputs.version }}"
         echo "   Packaging: ${{ github.event.inputs.packaging }}"
-        echo "   Target: https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g"
+        echo "   Target: https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g".
