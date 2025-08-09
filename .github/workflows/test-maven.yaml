@@ -1,4 +1,5 @@
 name: Simple Maven Package Transfer
+
 on:
   workflow_dispatch:
     inputs:
@@ -18,18 +19,21 @@ on:
         description: 'Packaging (jar, war, etc)'
         required: true
         default: 'jar'
+
 jobs:
   transfer:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+
     steps:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+
     - name: Configure Maven settings for source repository
       run: |
         mkdir -p ~/.m2
@@ -63,50 +67,28 @@ jobs:
           </activeProfiles>
         </settings>
         EOF
-    - name: Download artifact and POM using Maven
+
+    - name: Download artifact and POM from source
       run: |
         mkdir -p temp local-repo
         
-        ARTIFACT_FILE_NAME="${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}"
-        ARTIFACT_FILE="./temp/$ARTIFACT_FILE_NAME"
-        
-        echo "📥 Downloading artifact: ${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} from source repository..."
-        
-        # Download the main artifact
+        echo "📥 Downloading JAR..."
         mvn dependency:copy \
           -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:${{ github.event.inputs.packaging }} \
           -DoutputDirectory=./temp/ \
           -Dmaven.repo.local=./local-repo \
           -Dmdep.stripVersion=false
         
-        # Check if the download was successful
-        if [ $? -ne 0 ]; then
-          echo "❌ Failed to download artifact from the source repository."
-          echo "Please verify the artifact coordinates (${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}) and that it exists at https://maven.pkg.github.com/ios-mcn-ims/cscf"
-          exit 1
-        fi
-        
-        # Check if the file exists in the temp directory as a final confirmation
-        if [ ! -f "$ARTIFACT_FILE" ]; then
-          echo "❌ Artifact file not found at '$ARTIFACT_FILE' after download attempt."
-          echo "Available files in temp directory:"
-          ls -la ./temp/
-          exit 1
-        fi
-        echo "✅ Artifact downloaded successfully: $ARTIFACT_FILE"
-        
-        # Download POM file (it's optional, so we allow this command to fail)
-        POM_FILE_NAME="${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.pom"
-        POM_FILE="./temp/$POM_FILE_NAME"
-        echo "📥 Attempting to download POM file..."
+        echo "📥 Downloading POM (optional)..."
         mvn dependency:copy \
           -Dartifact=${{ github.event.inputs.group_id }}:${{ github.event.inputs.artifact_id }}:${{ github.event.inputs.version }}:pom \
           -DoutputDirectory=./temp/ \
           -Dmaven.repo.local=./local-repo \
-          -Dmdep.stripVersion=false || echo "⚠️ POM file not found in source, will generate one if needed"
+          -Dmdep.stripVersion=false || echo "⚠️ No POM found in source, will generate one"
         
-        echo "📂 All files in temp directory before upload:"
+        echo "📂 Files downloaded to temp/:"
         ls -la ./temp/
+
     - name: Create isolated Maven settings for deployment
       run: |
         mkdir -p ~/.m2/deploy
@@ -121,33 +103,44 @@ jobs:
           </servers>
         </settings>
         EOF
-    - name: Upload artifact to nivedita-releases GitHub Packages
+
+    - name: Upload artifact to target repository
       run: |
-        ARTIFACT_FILE=./temp/${{ github.event.inputs.artifact_id }}-${{ github.event.inputs.version }}.${{ github.event.inputs.packaging }}
-        
-        echo "📤 Uploading artifact to GitHub Packages (nivedita-releases/test-openairinterface5g)"
-        echo "Source artifact file: $ARTIFACT_FILE"
-        
-        # Create a clean local repository for deployment
+        # Detect actual JAR and POM
+        ACTUAL_JAR=$(find ./temp -type f -name "${{ github.event.inputs.artifact_id }}*.${{ github.event.inputs.packaging }}" | head -n 1)
+        ACTUAL_POM=$(find ./temp -type f -name "${{ github.event.inputs.artifact_id }}*.pom" | head -n 1)
+
+        if [ -z "$ACTUAL_JAR" ]; then
+          echo "❌ No JAR file found to deploy."
+          exit 1
+        fi
+
+        echo "📤 Preparing to upload:"
+        echo "   JAR: $ACTUAL_JAR"
+        if [ -n "$ACTUAL_POM" ]; then
+          echo "   POM: $ACTUAL_POM"
+          POM_ARG="-DpomFile=$ACTUAL_POM"
+        else
+          echo "⚠️ No POM found, will generate one."
+          POM_ARG="-DgeneratePom=true"
+        fi
+
         mkdir -p ./deploy-repo
-        
-        echo "📄 Generating POM file during deployment..."
-        
-        # Deploy the artifact, forcing a POM to be generated.
-        # This bypasses any issues with the downloaded POM file.
+
         mvn deploy:deploy-file \
           -DgroupId=${{ github.event.inputs.group_id }} \
           -DartifactId=${{ github.event.inputs.artifact_id }} \
           -Dversion=${{ github.event.inputs.version }} \
           -Dpackaging=${{ github.event.inputs.packaging }} \
-          -Dfile=$ARTIFACT_FILE \
+          -Dfile="$ACTUAL_JAR" \
+          $POM_ARG \
           -DrepositoryId=github-target \
           -Durl=https://maven.pkg.github.com/nivedita-releases/test-openairinterface5g \
-          -DgeneratePom=true \
           -Dmaven.repo.local=./deploy-repo \
           -s ~/.m2/deploy/settings.xml \
           --batch-mode \
           -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
     - name: Verify upload
       run: |
         echo "✅ Transfer complete!"
