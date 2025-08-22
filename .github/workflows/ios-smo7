@@ -10,7 +10,7 @@ on:
       sdnc-image_target_version:
         description: 'Target Version for sdnc-image'
         required: true
-        default: '3.0.3'
+        default: '3.0.3-snapshot-latest'
 
       sdnc-web-image_source_version:
         description: 'Source Version for sdnc-web-image'
@@ -19,7 +19,7 @@ on:
       sdnc-web-image_target_version:
         description: 'Target Version for sdnc-web-image'
         required: true
-        default: '3.0.3'
+        default: '3.0.3-snapshot-latest'
 
       ccsdk-odlsli-alpine-image_source_version:
         description: 'Source Version for ccsdk-odlsli-alpine-image'
@@ -28,7 +28,7 @@ on:
       ccsdk-odlsli-alpine-image_target_version:
         description: 'Target Version for ccsdk-odlsli-alpine-image'
         required: true
-        default: '1.7.1'
+        default: '1.7.1-snapshot-latest'
 
 jobs:
   pull_retag_compare_push:
