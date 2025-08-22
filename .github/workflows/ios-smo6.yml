@@ -64,7 +64,7 @@ jobs:
           declare -A SOURCE_VERSIONS=(
             ["sa-rapp"]="${{ github.event.inputs.sa-rapp_source_version }}"
             ["oru-rapp"]="${{ github.event.inputs.oru-rapp_source_version }}"
-            ["ric-plt-submgr"]="${{ github.event.ric-plt-submgr_source_version }}"
+            ["ric-plt-submgr"]="${{ github.event.inputs.ric-plt-submgr_source_version }}"
             
           )
           
