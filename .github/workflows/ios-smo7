@@ -1,0 +1,101 @@
+name: Pull, Retag, Compare, and Push IOS-MCN-SMO & ONAP Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      sdnc-image_source_version:
+        description: 'Source Version for sdnc-image'
+        required: true
+        default: '3.0.3-snapshot-latest'
+      sdnc-image_target_version:
+        description: 'Target Version for sdnc-image'
+        required: true
+        default: '3.0.3'
+
+      sdnc-web-image_source_version:
+        description: 'Source Version for sdnc-web-image'
+        required: true
+        default: '3.0.3-snapshot-latest'
+      sdnc-web-image_target_version:
+        description: 'Target Version for sdnc-web-image'
+        required: true
+        default: '3.0.3'
+
+      ccsdk-odlsli-alpine-image_source_version:
+        description: 'Source Version for ccsdk-odlsli-alpine-image'
+        required: true
+        default: '1.7.1-snapshot-latest'
+      ccsdk-odlsli-alpine-image_target_version:
+        description: 'Target Version for ccsdk-odlsli-alpine-image'
+        required: true
+        default: '1.7.1'
+
+jobs:
+  pull_retag_compare_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      - name: Pull, Retag, Compare, and Push Docker Images
+        run: |
+          # Declare source versions
+          declare -A SOURCE_VERSIONS=(
+            
+            ["onap/sdnc-image"]="${{ github.event.inputs.sdnc-image_source_version }}"
+            ["onap/sdnc-web-image"]="${{ github.event.inputs.sdnc-web-image_source_version }}"
+            ["onap/ccsdk-odlsli-alpine-image"]="${{ github.event.inputs.ccsdk-odlsli-alpine-image_source_version }}"
+          )
+
+          # Declare target versions
+          declare -A TARGET_VERSIONS=(
+           
+            ["onap/sdnc-image"]="${{ github.event.inputs.sdnc-image_target_version }}"
+            ["onap/sdnc-web-image"]="${{ github.event.inputs.sdnc-web-image_target_version }}"
+            ["onap/ccsdk-odlsli-alpine-image"]="${{ github.event.inputs.ccsdk-odlsli-alpine-image_target_version }}"
+          )
+
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
+
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE} || true
+
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+
+            echo "Completed processing ${PACKAGE}"
+          done
