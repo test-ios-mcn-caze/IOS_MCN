@@ -89,7 +89,7 @@ jobs:
             ["nonrtric-plt-rappcatalogue-enhanced"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue-enhanced_target_version }}"
             ["pm-rapp"]="${{ github.event.inputs.pm-rapp_target_version }}"
             ["nonrtric-plt-dmaapmediatorproducer"]="${{ github.event.inputs.nonrtric-plt-dmaapmediatorproducer_target_version }}"
-            ["ric-plt-e2mgr]="${{ github.event.inputs.ric-plt-e2mgr_target_version }}"
+            ["ric-plt-e2mgr"]="${{ github.event.inputs.ric-plt-e2mgr_target_version }}"
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
