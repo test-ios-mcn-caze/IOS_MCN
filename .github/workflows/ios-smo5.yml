@@ -3,14 +3,14 @@ name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
 on:
   workflow_dispatch:
     inputs:
-      ric-plt-a1_source_version:
-        description: 'Source Version for ric-plt-a1'
-        required: true
-        default: '3.2.2'
-      ric-plt-a1_target_version:
-        description: 'Target Version for ric-plt-a1'
-        required: true
-        default: '3.2.2'
+      # ric-plt-a1_source_version:
+      #   description: 'Source Version for ric-plt-a1'
+      #   required: true
+      #   default: '3.2.2'
+      # ric-plt-a1_target_version:
+      #   description: 'Target Version for ric-plt-a1'
+      #   required: true
+      #   default: '3.2.2'
       ric-plt-dbaas_source_version:
         description: 'Source Version for ric-plt-dbaas'
         required: true
@@ -27,14 +27,14 @@ on:
         description: 'Target Version for ric-plt-e2'
         required: true
         default: '6.0.4'
-      rtmgr_sim_source_version:
-        description: 'Source Version for rtmgr_sim'
-        required: true
-        default: 'i-release'
-      rtmgr_sim_target_version:
-        description: 'Target Version for rtmgr_sim'
-        required: true
-        default: 'i-release'
+      # rtmgr_sim_source_version:
+      #   description: 'Source Version for rtmgr_sim'
+      #   required: true
+      #   default: 'i-release'
+      # rtmgr_sim_target_version:
+      #   description: 'Target Version for rtmgr_sim'
+      #   required: true
+      #   default: 'i-release'
       ric-plt-appmgr_source_version:
         description: 'Source Version for ric-plt-appmgr'
         required: true
@@ -77,18 +77,18 @@ jobs:
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
-            ["ric-plt-a1"]="${{ github.event.inputs.ric-plt-a1_source_version }}"
+            # ["ric-plt-a1"]="${{ github.event.inputs.ric-plt-a1_source_version }}"
             ["ric-plt-dbaas"]="${{ github.event.inputs.ric-plt-dbaas_source_version }}"
-            ["ric-plt-e2"]="${{ github.event.ric-plt-e2_source_version }}"
-            ["rtmgr_sim"]="${{ github.event.inputs.rtmgr_sim_source_version }}"
+            ["ric-plt-e2"]="${{ github.event.inputs.ric-plt-e2_source_version }}"
+            # ["rtmgr_sim"]="${{ github.event.inputs.rtmgr_sim_source_version }}"
             ["ric-plt-appmgr"]="${{ github.event.inputs.ric-plt-appmgr_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
-            ["ric-plt-a1"]="${{ github.event.inputs.ric-plt-a1_target_version }}"
+            # ["ric-plt-a1"]="${{ github.event.inputs.ric-plt-a1_target_version }}"
             ["ric-plt-dbaas"]="${{ github.event.inputs.ric-plt-dbaas_target_version }}"
             ["ric-plt-e2"]="${{ github.event.inputs.ric-plt-e2_target_version }}"
-            ["rtmgr_sim"]="${{ github.event.inputs.rtmgr_sim_target_version }}"
+            # ["rtmgr_sim"]="${{ github.event.inputs.rtmgr_sim_target_version }}"
             ["ric-plt-appmgr"]="${{ github.event.inputs.ric-plt-appmgr_target_version }}"
           )
           
