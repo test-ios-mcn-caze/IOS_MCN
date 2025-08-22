@@ -1,0 +1,116 @@
+name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      tabx_source_version:
+        description: 'Source Version for tabx'
+        required: true
+        default: '1.0'
+      tabx_target_version:
+        description: 'Target Version for tabx'
+        required: true
+        default: '1.0'
+      nonrtric-plt-rappcatalogue-enhanced_source_version:
+        description: 'Source Version for nonrtric-plt-rappcatalogue-enhanced'
+        required: true
+        default: '1.2.0'
+      nonrtric-plt-rappcatalogue-enhanced_target_version:
+        description: 'Target Version for nonrtric-plt-rappcatalogue-enhanced'
+        required: true
+        default: '1.2.0'
+      pm-rapp_source_version:
+        description: 'Source Version for pm-rapp'
+        required: true
+        default: '1.0'
+      pm-rapp_target_version:
+        description: 'Target Version for pm-rapp'
+        required: true
+        default: '1.0'
+      nonrtric-plt-dmaapmediatorproducer_source_version:
+        description: 'Source Version for nonrtric-plt-dmaapmediatorproducer'
+        required: true
+        default: '1.2.0'
+      nonrtric-plt-dmaapmediatorproducer_target_version:
+        description: 'Target Version for nonrtric-plt-dmaapmediatorproducer'
+        required: true
+        default: '1.2.0'
+      ric-plt-e2mgr_source_version:
+        description: 'Source Version for ric-plt-e2mgr'
+        required: true
+        default: '6.0.4'
+      ric-plt-e2mgr_target_version:
+        description: 'Target Version for ric-plt-e2mgr'
+        required: true
+        default: '6.0.4'
+
+jobs:
+  pull_retag_compare_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      - name: Pull, Retag, Compare, and Push Docker Images
+        run: |
+          # Define associative arrays for source and target versions
+          declare -A SOURCE_VERSIONS=(
+            ["tabx"]="${{ github.event.inputs.tabx_source_version }}"
+            ["nonrtric-plt-rappcatalogue-enhanced"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue-enhanced_source_version }}"
+            ["pm-rapp"]="${{ github.event.inputs.pm-rapp_source_version }}"
+            ["nonrtric-plt-dmaapmediatorproducer"]="${{ github.event.inputs.nonrtric-plt-dmaapmediatorproducer_source_version }}"
+            ["ric-plt-e2mgr"]="${{ github.event.inputs.ric-plt-e2mgr_source_version }}"
+          )
+          
+          declare -A TARGET_VERSIONS=(
+            ["tabx"]="${{ github.event.inputs.tabx_target_version }}"
+            ["nonrtric-plt-rappcatalogue-enhanced"]="${{ github.event.inputs.nonrtric-plt-rappcatalogue-enhanced_target_version }}"
+            ["pm-rapp"]="${{ github.event.inputs.pm-rapp_target_version }}"
+            ["nonrtric-plt-dmaapmediatorproducer"]="${{ github.event.inputs.nonrtric-plt-dmaapmediatorproducer_target_version }}"
+            ["ric-plt-e2mgr]="${{ github.event.inputs.ric-plt-e2mgr_target_version }}"
+          )
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
+            
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
+          done
