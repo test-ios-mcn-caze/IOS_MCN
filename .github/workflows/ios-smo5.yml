@@ -19,12 +19,12 @@ on:
         description: 'Target Version for ric-plt-dbaas'
         required: true
         default: '0.6.4'
-      pm-rapp_source_version:
-        description: 'Source Version for pm-rapp'
+      ric-plt-e2_source_version:
+        description: 'Source Version for ric-plt-e2'
         required: true
         default: '6.0.4'
-      pm-rapp_target_version:
-        description: 'Target Version for pm-rapp'
+      ric-plt-e2_target_version:
+        description: 'Target Version for ric-plt-e2'
         required: true
         default: '6.0.4'
       rtmgr_sim_source_version:
