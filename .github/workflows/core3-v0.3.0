@@ -11,14 +11,6 @@ on:
         description: 'Target Version for upf-epc-pfcpiface'
         required: true
         default: 'release-ivybridge-0.2.2'
-      upf-epc-pfcpiface_source_version:
-        description: 'Source Version for upf-epc-pfcpiface'
-        required: true
-        default: 'release-haswell-0.2.2'
-      upf-epc-pfcpiface_target_version:
-        description: 'Target Version for upf-epc-pfcpiface'
-        required: true
-        default: 'release-haswell-0.2.2'
       upf-epc-bess_source_version:
         description: 'Source Version for upf-epc-bess'
         required: true
@@ -27,14 +19,7 @@ on:
         description: 'Target Version for upf-epc-bess'
         required: true
         default: 'release-ivybridge-0.2.2'
-      upf-epc-bess_source_version:
-        description: 'Source Version for upf-epc-bess'
-        required: true
-        default: 'release-haswell-0.2.2' 
-      upf-epc-bess_target_version:
-        description: 'Target Version for upf-epc-bess'
-        required: true
-        default: 'release-haswell-0.2.2'
+      
       
 
 jobs:
@@ -75,16 +60,12 @@ jobs:
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_source_version }}"
-            ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_source_version }}"
-            ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_source_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_source_version }}"
            
           )
           
           declare -A TARGET_VERSIONS=(
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_target_version }}"
-            ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_target_version }}"
-            ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_target_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_target_version }}"
             
           )
