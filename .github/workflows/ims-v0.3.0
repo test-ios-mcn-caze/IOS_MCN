@@ -3,14 +3,14 @@ name: Pull, Retag, compare and Push Images from ios-mcn-ims
 on:
   workflow_dispatch:
     inputs:
-      n5_source_version:
-        description: 'source version tag for n5 (e.g., release-0.0.10)'
-        required: true
-        default: 'release-0.0.1'
-      n5_target_version:
-        description: 'target version tag for n5 (e.g., release-0.0.10)'
-        required: true
-        default: 'release-0.0.1'
+      #n5_source_version:
+        #description: 'source version tag for n5 (e.g., release-0.0.10)'
+        #required: true
+        #default: 'release-0.0.1'
+      #n5_target_version:
+        #description: 'target version tag for n5 (e.g., release-0.0.10)'
+        #required: true
+        #default: 'release-0.0.1'
       cscf_source_version:
         description: 'source version tag for cscf (e.g., release-0.0.6)'
         required: true
@@ -57,14 +57,14 @@ jobs:
         run: |
           
           declare -A SOURCE_VERSIONS=(
-            ["n5"]="${{ github.event.inputs.n5_source_version }}"
+            ##["n5"]="${{ github.event.inputs.n5_source_version }}"
             ["cscf"]="${{ github.event.inputs.cscf_source_version }}"
             
             
           )
 
           declare -A TARGET_VERSIONS=(
-            ["n5"]="${{ github.event.inputs.n5_target_version }}"
+            ##["n5"]="${{ github.event.inputs.n5_target_version }}"
             ["cscf"]="${{ github.event.inputs.cscf_target_version }}"
             
             
