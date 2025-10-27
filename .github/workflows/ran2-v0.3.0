@@ -85,7 +85,7 @@ jobs:
             ["ran-build-uni"]="${{ github.event.inputs.ran-build-uni_source_version }}"
             ["ran-build-fhi72-uni"]="${{ github.event.inputs.ran-build-fhi72-uni_source_version }}"
             ["ran-gnb-uni"]="${{ github.event.inputs.ran-gnb-uni_source_version }}"
-            ["ran-gnb-fhi72-uni"]="${{ github.event.inputs.ios-mcn-nr-ue-dis_source_version }}"
+            ["ran-gnb-fhi72-uni"]="${{ github.event.inputs.ran-gnb-fhi72-uni_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
