@@ -100,7 +100,7 @@ jobs:
             SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
             TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
             
-            SOURCE_IMAGE="ghcr.io/ios-mcn-core/${PACKAGE}:${SOURCE_VERSION}"
+            SOURCE_IMAGE="ghcr.io/ios-mcn-ran/${PACKAGE}:${SOURCE_VERSION}"
             TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
             
             echo "Processing ${PACKAGE}..."
