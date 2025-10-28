@@ -1,25 +1,40 @@
-name: Pull, Retag, and Push Images from ios-mcn-core
+name: Pull, Retag, Compare, and Push IOS-MCN-CORE Docker Images
 
 on:
   workflow_dispatch:
     inputs:
-      upf-epc-pfcpiface_source_version:
-        description: 'Source Version for upf-epc-pfcpiface'
-        required: true
-        default: 'release-ivybridge-0.2.2'
-      upf-epc-pfcpiface_target_version:
-        description: 'Target Version for upf-epc-pfcpiface'
-        required: true
-        default: 'release-ivybridge-0.2.2'
+      simapp_source_version:
+         description: 'Source Version for simapp (e.g., release-0.0.10)'
+         required: true
+         default: 'release-0.2.2'
+      simapp_target_version:
+         description: 'Target Version for simapp (e.g., v1.0.0)'
+         required: true
+         default: 'release-0.2.2'
       upf-epc-bess_source_version:
         description: 'Source Version for upf-epc-bess'
         required: true
-        default: 'release-ivybridge-0.2.2'
+        default: 'release-haswell-0.2.2'
       upf-epc-bess_target_version:
         description: 'Target Version for upf-epc-bess'
         required: true
-        default: 'release-ivybridge-0.2.2'
-      
+        default: 'release-haswell-0.2.2'
+      upf-epc-pfcpiface_source_version:
+        description: 'Source Version for  upf-epc-pfcpiface'
+        required: true
+        default: 'release-haswell-0.2.2'
+      upf-epc-pfcpiface_target_version:
+        description: 'Target Version for  upf-epc-pfcpiface'
+        required: true
+        default: 'release-haswell-0.2.2'
+       bess_build_source_version:
+         description: 'Source Version for bess-build'
+         required: true
+         default: 'release-0.2.2'
+       bess_build_target_version:
+         description: 'Target Version for bess-build'
+         required: true
+         default: 'release-0.2.2'
       
 
 jobs:
@@ -34,7 +49,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -51,22 +66,22 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
           sh install-scout.sh
-
-      
-
-
       - name: Pull, Retag, Compare, and Push Docker Images
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
-            ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_source_version }}"
+            ["simapp"]="${{ github.event.inputs.simapp_source_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_source_version }}"
-           
+            ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_source_version }}"
+            ["bess_build"]="${{ github.event.inputs.bess_build_source_version }}"
+            
           )
           
           declare -A TARGET_VERSIONS=(
-            ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_target_version }}"
+            ["simapp"]="${{ github.event.inputs.simapp_target_version }}"
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_target_version }}"
+            ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_target_version }}"
+            ["bess_build"]="${{ github.event.inputs.bess_build_target_version }}"
             
           )
           
