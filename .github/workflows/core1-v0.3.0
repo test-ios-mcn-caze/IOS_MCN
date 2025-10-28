@@ -27,22 +27,22 @@ on:
         description: 'Target Version for PCF'
         required: true
         default: 'release-0.2.2'
-      udr_source_version:
-        description: 'Source Version for UDR'
+      nrf_source_version:
+        description: 'Source Version for NRF'
         required: true
-        default: 'release-0.2.2' 
-      udr_target_version:
-        description: 'Target Version for UDR'
+        default: 'release-0.2.1' 
+      nrf_target_version:
+        description: 'Target Version for NRF'
         required: true
-        default: 'release-0.2.2'
-      webui_source_version:
-        description: 'Source Version for webui'
+        default: 'release-0.2.1'
+      udm_source_version:
+        description: 'Source Version for UDM'
         required: true
-        default: 'release-0.2.2'
-      webui_target_version:
-        description: 'Target Version for webui'
+        default: 'release-0.2.1'
+      udm_target_version:
+        description: 'Target Version for UDM'
         required: true
-        default: 'release-0.2.2'
+        default: 'release-0.2.1'
 
 jobs:
   pull_retag_compare_push:
@@ -84,16 +84,16 @@ jobs:
             ["5gc-amf"]="${{ github.event.inputs.amf_source_version }}"
             ["5gc-smf"]="${{ github.event.inputs.smf_source_version }}"
             ["5gc-pcf"]="${{ github.event.inputs.pcf_source_version }}"
-            ["5gc-udr"]="${{ github.event.inputs.udr_source_version }}"
-            ["5gc-webui"]="${{ github.event.inputs.webui_source_version }}"
+            ["5gc-nrf"]="${{ github.event.inputs.nrf_source_version }}"
+            ["5gc-udm"]="${{ github.event.inputs.udm_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
             ["5gc-amf"]="${{ github.event.inputs.amf_target_version }}"
             ["5gc-smf"]="${{ github.event.inputs.smf_target_version }}"
             ["5gc-pcf"]="${{ github.event.inputs.pcf_target_version }}"
-            ["5gc-udr"]="${{ github.event.inputs.udr_target_version }}"
-            ["5gc-webui"]="${{ github.event.inputs.webui_target_version }}"
+            ["5gc-nrf"]="${{ github.event.inputs.nrf_target_version }}"
+            ["5gc-udm"]="${{ github.event.inputs.udm_target_version }}"
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
