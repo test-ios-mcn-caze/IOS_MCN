@@ -27,11 +27,11 @@ on:
         description: 'Target Version for  upf-epc-pfcpiface'
         required: true
         default: 'release-haswell-0.2.2'
-       bess_build_source_version:
+      bess_build_source_version:
          description: 'Source Version for bess-build'
          required: true
          default: 'release-0.2.2'
-       bess_build_target_version:
+      bess_build_target_version:
          description: 'Target Version for bess-build'
          required: true
          default: 'release-0.2.2'
