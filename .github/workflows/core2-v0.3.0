@@ -1,25 +1,48 @@
-name: Pull, Retag, and Push Images from ios-mcn-core
+name: Pull, Retag, Compare, and Push IOS-MCN-CORE Docker Images
 
 on:
   workflow_dispatch:
     inputs:
-      simapp_source_version:
-        description: 'Source Version for simapp'
+      udr_source_version:
+        description: 'Source Version for UDR'
         required: true
         default: 'release-0.2.2'
-      simapp_target_version:
-        description: 'Target Version for simapp'
+      udr_target_version:
+        description: 'Target Version for UDR'
         required: true
         default: 'release-0.2.2'
-      bess_build_source_version:
-        description: 'Source Version for bess_build'
+      nssf_source_version:
+        description: 'Source Version for NSSF'
+        required: true
+        default: 'release-0.2.1'
+      nssf_target_version:
+        description: 'Target Version for NSSF'
+        required: true
+        default: 'release-0.2.1'
+      webui_source_version:
+        description: 'Source Version for WEBUI'
         required: true
         default: 'release-0.2.2'
-      bess_build_target_version:
-        description: 'Target Version for bess_build'
+      webui_target_version:
+        description: 'Target Version for WEBUI'
         required: true
         default: 'release-0.2.2'
-      
+      metricfunc_source_version:
+        description: 'Source Version for METRICFUNC'
+        required: true
+        default: 'release-0.2.1'
+      metricfunc_target_version:
+        description: 'Target Version for METRICFUNC'
+        required: true
+        default: 'release-0.2.1'
+      ausf_source_version:
+        description: 'Source Version for AUSF'
+        required: true
+        default: 'release-0.2.1'
+      ausf_target_version:
+        description: 'Target Version for AUSF'
+        required: true
+        default: 'release-0.2.1'
 
 jobs:
   pull_retag_compare_push:
@@ -50,23 +73,23 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
           sh install-scout.sh
-
-      
-
-
       - name: Pull, Retag, Compare, and Push Docker Images
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
-            ["simapp"]="${{ github.event.inputs.simapp_source_version }}"
-            ["bess_build"]="${{ github.event.inputs.bess_build_source_version }}"
-            
+            ["5gc-udr"]="${{ github.event.inputs.udr_source_version }}"
+            ["5gc-nssf"]="${{ github.event.inputs.nssf_source_version }}"
+            ["5gc-webui"]="${{ github.event.inputs.webui_source_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_source_version }}"
+            ["5gc-ausf"]="${{ github.event.inputs.ausf_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
-            ["simapp"]="${{ github.event.inputs.simapp_target_version }}"
-            ["bess_build"]="${{ github.event.inputs.bess_build_target_version }}"
-            
+            ["5gc-udr"]="${{ github.event.inputs.udr_target_version }}"
+            ["5gc-nssf"]="${{ github.event.inputs.nssf_target_version }}"
+            ["5gc-webui"]="${{ github.event.inputs.webui_target_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_target_version }}"
+            ["5gc-ausf"]="${{ github.event.inputs.ausf_target_version }}"
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
