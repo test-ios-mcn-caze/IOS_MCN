@@ -20,27 +20,27 @@ on:
         required: true
         default: 'v0.2.1.rc4'
       ran-build-fhi72-uni_source_version:
-        description: 'Source Version for ios-mcn-gnb-dis'
+        description: 'Source Version for ran-build-fhi72-uni'
         required: true
         default: 'v0.2.1.rc4'
       ran-build-fhi72-uni_target_version:
-        description: 'Target Version for ios-mcn-gnb-dis'
+        description: 'Target Version for ran-build-fhi72-uni'
         required: true
         default: 'v0.2.1.rc4'
       ran-gnb-uni_source_version:
-        description: 'Source Version for ios-mcn-cuup-dis'
+        description: 'Source Version for ran-gnb-uni'
         required: true
         default: 'v0.2.1.rc4' 
       ran-gnb-uni_target_version:
-        description: 'Target Version for ios-mcn-cuup-dis'
+        description: 'Target Version for ran-gnb-uni'
         required: true
         default: 'v0.2.1.rc4'
       ran-gnb-fhi72-uni_source_version:
-        description: 'Source Version for ios-mcn-nr-ue-dis'
+        description: 'Source Version for ran-gnb-fhi72-uni'
         required: true
         default: 'v0.2.1.rc4'
       ran-gnb-fhi72-uni_target_version:
-        description: 'Target Version ios-mcn-nr-ue-dis'
+        description: 'Target Version ran-gnb-fhi72-uni'
         required: true
         default: 'v0.2.1.rc4'
 
