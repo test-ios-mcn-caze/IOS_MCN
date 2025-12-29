@@ -1,0 +1,116 @@
+name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      ric-app-ad_source_version:
+        description: 'Source Version for ric-app-ad'
+        required: true
+        default: '1.0.1'
+      ric-app-ad_target_version:
+        description: 'Target Version for ric-app-ad'
+        required: true
+        default: 'v0.4.0'
+      a1-policy-producer_source_version:
+        description: 'Source Version for a1-policy-producer'
+        required: true
+        default: '1.0.0'
+      a1-policy-producer_target_version:
+        description: 'Target Version for a1-policy-producer'
+        required: true
+        default: 'v0.4.0'
+      load-monitoring-rapp_source_version:
+        description: 'Source Version for load-monitoring-rapp'
+        required: true
+        default: '1.0.0'
+      load-monitoring-rapp_target_version:
+        description: 'Target Version for load-monitoring-rapp'
+        required: true
+        default: 'v0.4.0'
+      ue-management-rapp_source_version:
+        description: 'Source Version for ue-management-rapp'
+        required: true
+        default: '1.0.0'
+      ue-management-rapp_target_version:
+        description: 'Target Version for ue-management-rapp'
+        required: true
+        default: 'v0.4.0'
+      darpan_source_version:
+        description: 'Source Version for darpan'
+        required: true
+        default: '1.2.0'
+      darpan_target_version:
+        description: 'Target Version for darpan'
+        required: true
+        default: 'v0.4.0'
+
+jobs:
+  pull_retag_compare_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      - name: Pull, Retag, Compare, and Push Docker Images
+        run: |
+          # Define associative arrays for source and target versions
+          declare -A SOURCE_VERSIONS=(
+            ["ric-app-ad"]="${{ github.event.inputs.ric-app-ad_source_version }}"
+            ["a1-policy-producer"]="${{ github.event.inputs.a1-policy-producer_source_version }}"
+            ["load-monitoring-rapp"]="${{ github.event.inputs.load-monitoring-rapp_source_version }}"
+            ["ue-management-rapp"]="${{ github.event.inputs.ue-management-rapp_source_version }}"
+            ["xapp-onboarder"]="${{ github.event.inputs.xapp-onboarder_source_version }}"
+          )
+          
+          declare -A TARGET_VERSIONS=(
+            ["ric-app-ad"]="${{ github.event.inputs.ric-app-ad_target_version }}"
+            ["a1-policy-producer"]="${{ github.event.inputs.a1-policy-producer_target_version }}"
+            ["load-monitoring-rapp"]="${{ github.event.inputs.load-monitoring-rapp_target_version }}"
+            ["ue-management-rapp"]="${{ github.event.inputs.ue-management-rapp_target_version }}"
+            ["darpan"]="${{ github.event.inputs.darpan_target_version }}"
+          )
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
+            
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
+          done
