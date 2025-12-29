@@ -1,0 +1,120 @@
+name: Pull, Retag, and Push Images from ios-mcn-core
+
+on:
+  workflow_dispatch:
+    inputs:
+      ran-base-uni_source_version:
+        description: 'Source Version for ran-base-uni'
+        required: true
+        default: 'v0.3.1.rc4.openairinterface5g'
+      ran-base-uni_target_version:
+        description: 'Target Version for ran-base-uni'
+        required: true
+        default: 'v0.4.0'
+      ran-build-uni_source_version:
+        description: 'Source Version for ran-build-uni'
+        required: true
+        default: 'v0.3.1.rc4.openairinterface5g'
+      ran-build-uni_target_version:
+        description: 'Target Version for ran-build-uni'
+        required: true
+        default: 'v0.4.0'
+      ran-build-fhi72-uni_source_version:
+        description: 'Source Version for ran-build-fhi72-uni'
+        required: true
+        default: 'v0.3.1.rc4.openairinterface5g'
+      ran-build-fhi72-uni_target_version:
+        description: 'Target Version for ran-build-fhi72-uni'
+        required: true
+        default: 'v0.4.0'
+      ran-gnb-uni_source_version:
+        description: 'Source Version for ran-gnb-uni'
+        required: true
+        default: 'v0.3.1.rc4.openairinterface5g' 
+      ran-gnb-uni_target_version:
+        description: 'Target Version for ran-gnb-uni'
+        required: true
+        default: 'v0.4.0'
+      ran-gnb-fhi72-uni_source_version:
+        description: 'Source Version for ran-gnb-fhi72-uni'
+        required: true
+        default: 'v0.3.1.rc4.openairinterface5g'
+      ran-gnb-fhi72-uni_target_version:
+        description: 'Target Version ran-gnb-fhi72-uni'
+        required: true
+        default: 'v0.4.0'
+
+jobs:
+  pull_retag_compare_push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      
+
+
+      - name: Pull, Retag, Compare, and Push Docker Images
+        run: |
+          # Define associative arrays for source and target versions
+          declare -A SOURCE_VERSIONS=(
+            ["ran-base-uni"]="${{ github.event.inputs.ran-base-uni_source_version }}"
+            ["ran-build-uni"]="${{ github.event.inputs.ran-build-uni_source_version }}"
+            ["ran-build-fhi72-uni"]="${{ github.event.inputs.ran-build-fhi72-uni_source_version }}"
+            ["ran-gnb-uni"]="${{ github.event.inputs.ran-gnb-uni_source_version }}"
+            ["ran-gnb-fhi72-uni"]="${{ github.event.inputs.ran-gnb-fhi72-uni_source_version }}"
+          )
+          
+          declare -A TARGET_VERSIONS=(
+            ["ran-base-uni"]="${{ github.event.inputs.ran-base-uni_target_version }}"
+            ["ran-build-uni"]="${{ github.event.inputs.ran-build-uni_target_version }}"
+            ["ran-build-fhi72-uni"]="${{ github.event.inputs.ran-build-fhi72-uni_target_version }}"
+            ["ran-gnb-uni"]="${{ github.event.inputs.ran-gnb-uni_target_version }}"
+            ["ran-gnb-fhi72-uni"]="${{ github.event.inputs.ran-gnb-fhi72-uni_target_version }}"
+          )
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-ran/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
+            
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
+          done
