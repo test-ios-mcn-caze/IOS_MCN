@@ -81,7 +81,7 @@ jobs:
             ["a1-policy-producer"]="${{ github.event.inputs.a1-policy-producer_source_version }}"
             ["load-monitoring-rapp"]="${{ github.event.inputs.load-monitoring-rapp_source_version }}"
             ["ue-management-rapp"]="${{ github.event.inputs.ue-management-rapp_source_version }}"
-            ["xapp-onboarder"]="${{ github.event.inputs.xapp-onboarder_source_version }}"
+            ["darpan"]="${{ github.event.inputs.darpan_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
