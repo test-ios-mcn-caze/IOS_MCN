@@ -3,22 +3,22 @@ name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
 on:
   workflow_dispatch:
     inputs:
-      ric-plt-submgr_source_version:
-        description: 'Source Version for ric-plt-submgr'
-        required: true
-        default: '0.10.2'
-      ric-plt-submgr_target_version:
-        description: 'Target Version for ric-plt-submgr'
-        required: true
-        default: 'v0.4.0'
-      ric-plt-vespamgr_source_version:
-        description: 'Source Version for ric-plt-vespamgr'
-        required: true
-        default: '0.7.5'
-      ric-plt-vespamgr_target_version:
-        description: 'Target Version for ric-plt-vespamgr'
-        required: true
-        default: 'v0.4.0'
+      # ric-plt-submgr_source_version:
+      #   description: 'Source Version for ric-plt-submgr'
+      #   required: true
+      #   default: '0.10.2'
+      # ric-plt-submgr_target_version:
+      #   description: 'Target Version for ric-plt-submgr'
+      #   required: true
+      #   default: 'v0.4.0'
+      # ric-plt-vespamgr_source_version:
+      #   description: 'Source Version for ric-plt-vespamgr'
+      #   required: true
+      #   default: '0.7.5'
+      # ric-plt-vespamgr_target_version:
+      #   description: 'Target Version for ric-plt-vespamgr'
+      #   required: true
+      #   default: 'v0.4.0'
       ric-app-bouncer_source_version:
         description: 'Source Version for ric-app-bouncer'
         required: true
@@ -27,22 +27,22 @@ on:
         description: 'Target Version for ric-app-bouncer'
         required: true
         default: 'v0.4.0'
-      ric-app-kpimon-go_source_version:
-        description: 'Source Version for ric-app-kpimon-go'
-        required: true
-        default: '1.0.1'
-      ric-app-kpimon-go_target_version:
-        description: 'Target Version for ric-app-kpimon-go'
-        required: true
-        default: 'v0.4.0'
-      xapp-onboarder_source_version:
-        description: 'Source Version for xapp-onboarder'
-        required: true
-        default: '1.0.0'
-      xapp-onboarder_target_version:
-        description: 'Target Version for xapp-onboarder'
-        required: true
-        default: 'v0.4.0'
+      # ric-app-kpimon-go_source_version:
+      #   description: 'Source Version for ric-app-kpimon-go'
+      #   required: true
+      #   default: '1.0.1'
+      # ric-app-kpimon-go_target_version:
+      #   description: 'Target Version for ric-app-kpimon-go'
+      #   required: true
+      #   default: 'v0.4.0'
+      # xapp-onboarder_source_version:
+      #   description: 'Source Version for xapp-onboarder'
+      #   required: true
+      #   default: '1.0.0'
+      # xapp-onboarder_target_version:
+      #   description: 'Target Version for xapp-onboarder'
+      #   required: true
+      #   default: 'v0.4.0'
 
 jobs:
   pull_retag_compare_push:
@@ -77,19 +77,19 @@ jobs:
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
-            ["ric-plt-submgr"]="${{ github.event.inputs.ric-plt-submgr_source_version }}"
-            ["ric-plt-vespamgr"]="${{ github.event.inputs.ric-plt-vespamgr_source_version }}"
+            # ["ric-plt-submgr"]="${{ github.event.inputs.ric-plt-submgr_source_version }}"
+            # ["ric-plt-vespamgr"]="${{ github.event.inputs.ric-plt-vespamgr_source_version }}"
             ["ric-app-bouncer"]="${{ github.event.inputs.ric-app-bouncer_source_version }}"
-            ["ric-app-kpimon-go"]="${{ github.event.inputs.ric-app-kpimon-go_source_version }}"
-            ["xapp-onboarder"]="${{ github.event.inputs.xapp-onboarder_source_version }}"
+            # ["ric-app-kpimon-go"]="${{ github.event.inputs.ric-app-kpimon-go_source_version }}"
+            # ["xapp-onboarder"]="${{ github.event.inputs.xapp-onboarder_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
-            ["ric-plt-submgr"]="${{ github.event.inputs.ric-plt-submgr_target_version }}"
-            ["ric-plt-vespamgr"]="${{ github.event.inputs.ric-plt-vespamgr_target_version }}"
+            # ["ric-plt-submgr"]="${{ github.event.inputs.ric-plt-submgr_target_version }}"
+            # ["ric-plt-vespamgr"]="${{ github.event.inputs.ric-plt-vespamgr_target_version }}"
             ["ric-app-bouncer"]="${{ github.event.inputs.ric-app-bouncer_target_version }}"
-            ["ric-app-kpimon-go"]="${{ github.event.inputs.ric-app-kpimon-go_target_version }}"
-            ["xapp-onboarder"]="${{ github.event.inputs.xapp-onboarder_target_version }}"
+            # ["ric-app-kpimon-go"]="${{ github.event.inputs.ric-app-kpimon-go_target_version }}"
+            # ["xapp-onboarder"]="${{ github.event.inputs.xapp-onboarder_target_version }}"
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
