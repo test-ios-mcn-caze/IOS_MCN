@@ -1,0 +1,116 @@
+name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      ric-app-rc_source_version:
+        description: 'Source Version for ric-app-rc'
+        required: true
+        default: '1.0.1'
+      ric-app-rc_target_version:
+        description: 'Target Version for ric-app-rc'
+        required: true
+        default: 'v0.4.0'
+      ric-app-ts_source_version:
+        description: 'Source Version for ric-app-ts'
+        required: true
+        default: '1.2.5'
+      ric-app-ts_target_version:
+        description: 'Target Version for ric-app-ts'
+        required: true
+        default: 'v0.4.0'
+      ric-plt-a1_source_version:
+        description: 'Source Version for ric-plt-a1'
+        required: true
+        default: '3.2.3'
+      ric-plt-a1_target_version:
+        description: 'Target Version for ric-plt-a1'
+        required: true
+        default: 'v0.4.0'
+      ric-plt-alarmmanager_source_version:
+        description: 'Source Version for ric-plt-alarmmanager'
+        required: true
+        default: '0.5.16'
+      ric-plt-alarmmanager_target_version:
+        description: 'Target Version for ric-plt-alarmmanager'
+        required: true
+        default: 'v0.4.0'
+      ric-plt-appmgr_source_version:
+        description: 'Source Version for ric-plt-appmgr'
+        required: true
+        default: '0.5.8'
+      ric-plt-appmgr_target_version:
+        description: 'Target Version for ric-plt-appmgr'
+        required: true
+        default: 'v0.4.0'
+
+jobs:
+  pull_retag_compare_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      - name: Pull, Retag, Compare, and Push Docker Images
+        run: |
+          # Define associative arrays for source and target versions
+          declare -A SOURCE_VERSIONS=(
+            ["ric-app-rc"]="${{ github.event.inputs.ric-app-rc_source_version }}"
+            ["ric-app-ts"]="${{ github.event.inputs.ric-app-ts_source_version }}"
+            ["ric-plt-a1"]="${{ github.event.inputs.ric-plt-a1_source_version }}"
+            ["ric-plt-alarmmanager"]="${{ github.event.inputs.ric-plt-alarmmanager_source_version }}"
+            ["ric-plt-appmgr"]="${{ github.event.inputs.ric-plt-appmgr_source_version }}"
+          )
+          
+          declare -A TARGET_VERSIONS=(
+            ["ric-app-rc"]="${{ github.event.inputs.ric-app-rc_target_version }}"
+            ["ric-app-ts"]="${{ github.event.inputs.ric-app-ts_target_version }}"
+            ["ric-plt-a1"]="${{ github.event.inputs.ric-plt-a1_target_version }}"
+            ["ric-plt-alarmmanager"]="${{ github.event.inputs.ric-plt-alarmmanager_target_version }}"
+            ["ric-plt-appmgr"]="${{ github.event.inputs.ric-plt-appmgr_target_version }}"
+          )
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
+            
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
+          done
