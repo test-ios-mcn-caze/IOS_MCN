@@ -1,0 +1,116 @@
+name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      policy-apex-pdp_source_version:
+        description: 'Source Version for policy-apex-pdp'
+        required: true
+        default: '4.2.0'
+      policy-apex-pdp_target_version:
+        description: 'Target Version for policy-apex-pdp'
+        required: true
+        default: 'v0.4.0'
+      policy-api_source_version:
+        description: 'Source Version for policy-api'
+        required: true
+        default: '4.2.0'
+      policy-api_target_version:
+        description: 'Target Version for policy-api'
+        required: true
+        default: 'v0.4.0'
+      policy-clamp-ac-a1pms-ppnt_source_version:
+        description: 'Source Version for policy-clamp-ac-a1pms-ppnt'
+        required: true
+        default: '8.2.0'
+      policy-clamp-ac-a1pms-ppnt_target_version:
+        description: 'Target Version for policy-clamp-ac-a1pms-ppnt'
+        required: true
+        default: 'v0.4.0'
+      policy-clamp-ac-http-ppnt_source_version:
+        description: 'Source Version for policy-clamp-ac-http-ppnt'
+        required: true
+        default: '8.2.0'
+      policy-clamp-ac-http-ppnt_target_version:
+        description: 'Target Version for policy-clamp-ac-http-ppnt'
+        required: true
+        default: 'v0.4.0'
+      policy-clamp-ac-k8s-ppnt_source_version:
+        description: 'Source Version for policy-clamp-ac-k8s-ppnt'
+        required: true
+        default: '8.2.0'
+      policy-clamp-ac-k8s-ppnt_target_version:
+        description: 'Target Version for policy-clamp-ac-k8s-ppnt'
+        required: true
+        default: 'v0.4.0'
+
+jobs:
+  pull_retag_compare_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      - name: Pull, Retag, Compare, and Push Docker Images
+        run: |
+          # Define associative arrays for source and target versions
+          declare -A SOURCE_VERSIONS=(
+            ["policy-apex-pdp"]="${{ github.event.inputs.policy-apex-pdp_source_version }}"
+            ["policy-api"]="${{ github.event.inputs.policy-api_source_version }}"
+            ["policy-clamp-ac-a1pms-ppnt"]="${{ github.event.inputs.policy-clamp-ac-a1pms-ppnt_source_version }}"
+            ["policy-clamp-ac-http-ppnt"]="${{ github.event.inputs.policy-clamp-ac-http-ppnt_source_version }}"
+            ["policy-clamp-ac-k8s-ppnt"]="${{ github.event.inputs.policy-clamp-ac-k8s-ppnt_source_version }}"
+          )
+          
+          declare -A TARGET_VERSIONS=(
+            ["policy-apex-pdp"]="${{ github.event.inputs.policy-apex-pdp_target_version }}"
+            ["policy-api"]="${{ github.event.inputs.policy-api_target_version }}"
+            ["policy-clamp-ac-a1pms-ppnt"]="${{ github.event.inputs.policy-clamp-ac-a1pms-ppnt_target_version }}"
+            ["policy-clamp-ac-http-ppnt"]="${{ github.event.inputs.policy-clamp-ac-http-ppnt_target_version }}"
+            ["policy-clamp-ac-k8s-ppnt"]="${{ github.event.inputs.policy-clamp-ac-k8s-ppnt_target_version }}"
+          )
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
+            
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
+          done
