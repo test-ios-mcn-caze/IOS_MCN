@@ -87,7 +87,7 @@ jobs:
           declare -A TARGET_VERSIONS=(
             ["policy-clamp-ac-kserve-ppnt"]="${{ github.event.inputs.policy-clamp-ac-kserve-ppnt_target_version }}"
             ["policy-clamp-ac-pf-ppnt"]="${{ github.event.inputs.policy-clamp-ac-pf-ppnt_target_version }}"
-            ["policy-clamp-ac-a1pms-ppnt"]="${{ github.event.inputs.policy-clamp-ac-a1pms-ppnt_target_version }}"
+            ["policy-clamp-runtime-acm"]="${{ github.event.inputs.policy-clamp-runtime-acm_target_version }}"
             ["policy-db-migrator"]="${{ github.event.inputs.policy-db-migrator_target_version }}"
             ["policy-pap"]="${{ github.event.inputs.policy-pap_target_version }}"
           )
