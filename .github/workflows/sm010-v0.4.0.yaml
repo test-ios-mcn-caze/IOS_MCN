@@ -87,7 +87,7 @@ jobs:
           declare -A TARGET_VERSIONS=(
             ["ric-plt-submgr"]="${{ github.event.inputs.ric-plt-submgr_target_version }}"
             ["ric-plt-vespamgr"]="${{ github.event.inputs.ric-plt-vespamgr_target_version }}"
-            ["rric-app-bouncer"]="${{ github.event.inputs.ric-app-bouncer_target_version }}"
+            ["ric-app-bouncer"]="${{ github.event.inputs.ric-app-bouncer_target_version }}"
             ["ric-app-kpimon-go"]="${{ github.event.inputs.ric-app-kpimon-go_target_version }}"
             ["xapp-onboarder"]="${{ github.event.inputs.xapp-onboarder_target_version }}"
           )
