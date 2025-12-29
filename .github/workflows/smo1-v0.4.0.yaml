@@ -1,0 +1,116 @@
+name: Pull, Retag, Compare, and Push IOS-MCN-SMO Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      a1-simulator_source_version:
+        description: 'Source Version for a1-simulator'
+        required: true
+        default: '2.8.1'
+      a1-simulator_target_version:
+        description: 'Target Version for a1-simulator'
+        required: true
+        default: 'v0.4.0'
+      nonrtric-controlpanel_source_version:
+        description: 'Source Version for nonrtric-controlpanel'
+        required: true
+        default: '2.6.0'
+      nonrtric-controlpanel_target_version:
+        description: 'Target Version for nonrtric-controlpanel'
+        required: true
+        default: 'v0.4.0'
+      nonrtric-gateway_source_version:
+        description: 'Source Version for nonrtric-gateway'
+        required: true
+        default: '1.2.2'
+      nonrtric-gateway_target_version:
+        description: 'Target Version for nonrtric-gateway'
+        required: true
+        default: 'v0.4.0'
+      nonrtric-plt-a1policymanagementservice_source_version:
+        description: 'Source Version for nonrtric-plt-a1policymanagementservice'
+        required: true
+        default: '2.10.1'
+      nonrtric-plt-a1policymanagementservice_target_version:
+        description: 'Target Version for nonrtric-plt-a1policymanagementservice'
+        required: true
+        default: 'v0.4.0'
+      nonrtric-plt-auth-token-fetch_source_version:
+        description: 'Source Version for nonrtric-plt-auth-token-fetch'
+        required: true
+        default: '1.1.3'
+      nonrtric-plt-auth-token-fetch_target_version:
+        description: 'Target Version for nonrtric-plt-auth-token-fetch'
+        required: true
+        default: 'v0.4.0'
+
+jobs:
+  pull_retag_compare_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Install Docker Scout (if not already installed)
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      - name: Pull, Retag, Compare, and Push Docker Images
+        run: |
+          # Define associative arrays for source and target versions
+          declare -A SOURCE_VERSIONS=(
+            ["a1-simulator"]="${{ github.event.inputs.a1-simulator_source_version }}"
+            ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric-controlpanel_source_version }}"
+            ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric-gateway_source_version }}"
+            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_source_version }}"
+            ["nonrtric-plt-auth-token-fetch"]="${{ github.event.inputs.nonrtric-plt-auth-token-fetch_source_version }}"
+          )
+          
+          declare -A TARGET_VERSIONS=(
+            ["a1-simulator"]="${{ github.event.inputs.a1-simulator_target_version }}"
+            ["nonrtric-controlpanel"]="${{ github.event.inputs.nonrtric-controlpanel_target_version }}"
+            ["nonrtric-gateway"]="${{ github.event.inputs.nonrtric-gateway_target_version }}"
+            ["nonrtric-plt-a1policymanagementservice"]="${{ github.event.inputs.nonrtric-plt-a1policymanagementservice_target_version }}"
+            ["nonrtric-plt-auth-token-fetch"]="${{ github.event.inputs.nonrtric-plt-auth-token-fetch_target_version }}"
+          )
+          
+          for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
+            SOURCE_VERSION=${SOURCE_VERSIONS[$PACKAGE]}
+            TARGET_VERSION=${TARGET_VERSIONS[$PACKAGE]}
+            
+            SOURCE_IMAGE="ghcr.io/ios-mcn-smo/${PACKAGE}:${SOURCE_VERSION}"
+            TARGET_IMAGE="ghcr.io/ios-mcn/${PACKAGE}:${TARGET_VERSION}"
+            
+            echo "Processing ${PACKAGE}..."
+            echo "Pulling ${SOURCE_IMAGE}..."
+            docker pull ${SOURCE_IMAGE}
+            
+            echo "Retagging ${SOURCE_IMAGE} as ${TARGET_IMAGE}..."
+            docker tag ${SOURCE_IMAGE} ${TARGET_IMAGE}
+            
+            echo "Comparing ${SOURCE_IMAGE} and ${TARGET_IMAGE}..."
+            docker scout compare ${SOURCE_IMAGE} --to ${TARGET_IMAGE}
+            
+            echo "Pushing ${TARGET_IMAGE}..."
+            docker push ${TARGET_IMAGE}
+            
+            echo "Completed processing ${PACKAGE}"
+          done
