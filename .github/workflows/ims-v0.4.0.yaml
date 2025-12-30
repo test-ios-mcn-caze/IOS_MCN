@@ -6,7 +6,7 @@ on:
       cscf_source_version:
         description: 'source version tag for cscf (e.g., release-0.0.6)'
         required: true
-        default: 'release-0.3.2'
+        default: 'release-0.4.0'
       cscf_target_version:
         description: 'target version tag for cscf (e.g., release-0.0.6)'
         required: true
