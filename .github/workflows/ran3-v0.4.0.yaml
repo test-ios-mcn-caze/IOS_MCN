@@ -14,11 +14,11 @@ on:
       adapter-gnb_source_version:
         description: 'Source Version for adapter-gnb'
         required: true
-        default: 'v0.3.1.rc1.o1-adapter'
+        default: 'v0.4.0.o1-adapter'
       adapter-gnb_target_version:
         description: 'Target Version for adapter-gnb'
         required: true
-        default: 'v0.4.0'
+        default: 'v0.4.0.o1-adapter'
      
 
 jobs:
