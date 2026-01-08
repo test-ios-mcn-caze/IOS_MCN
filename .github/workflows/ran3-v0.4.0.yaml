@@ -1,14 +1,22 @@
-name: Pull, Retag, and Push Images from ios-mcn-core
+name: Pull, Retag, and Push Images from ios-mcn-ran
 
 on:
   workflow_dispatch:
     inputs:
-      ios-mcn-nr-ue-uni_source_version:
-        description: 'Source Version for ios-mcn-nr-ue-uni'
+      # ios-mcn-nr-ue-uni_source_version:
+      #   description: 'Source Version for ios-mcn-nr-ue-uni'
+      #   required: true
+      #   default: 'v0.3.1.rc4.openairinterface5g'
+      # ios-mcn-nr-ue-uni_target_version:
+      #   description: 'Target Version for ios-mcn-nr-ue-uni'
+      #   required: true
+      #   default: 'v0.4.0'
+      adapter-gnb_source_version:
+        description: 'Source Version for adapter-gnb'
         required: true
-        default: 'v0.3.1.rc4.openairinterface5g'
-      ios-mcn-nr-ue-uni_target_version:
-        description: 'Target Version for ios-mcn-nr-ue-uni'
+        default: 'v0.3.1.rc1.o1-adapter'
+      adapter-gnb_target_version:
+        description: 'Target Version for adapter-gnb'
         required: true
         default: 'v0.4.0'
      
@@ -50,12 +58,14 @@ jobs:
         run: |
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
-            ["ios-mcn-nr-ue-uni"]="${{ github.event.inputs.ios-mcn-nr-ue-uni_source_version }}"
+            # ["ios-mcn-nr-ue-uni"]="${{ github.event.inputs.ios-mcn-nr-ue-uni_source_version }}"
+            ["adapter-gnb"]="${{ github.event.inputs.adapter-gnb_source_version }}"
             
           )
           
           declare -A TARGET_VERSIONS=(
-            ["ios-mcn-nr-ue-uni"]="${{ github.event.inputs.ios-mcn-nr-ue-uni_target_version }}"
+            # ["ios-mcn-nr-ue-uni"]="${{ github.event.inputs.ios-mcn-nr-ue-uni_target_version }}"
+            ["adapter-gnb"]="${{ github.event.inputs.adapter-gnb_target_version }}"
             
           )
           
