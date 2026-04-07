@@ -20,11 +20,11 @@ on:
       #   required: true
       #   default: 'release-0.2.1'
       nrf_source_version:
-        description: 'Source Version for AUSF'
+        description: 'Source Version for NRF'
         required: true
         default: 'release-0.4.2.rc1'
       nrf_target_version:
-        description: 'Target Version for AUSF'
+        description: 'Target Version for NRF'
         required: true
         default: 'release-0.5.0'
 
