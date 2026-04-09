@@ -3,30 +3,30 @@ name: Pull, Retag, Compare, and Push IOS-MCN-CORE Docker Images
 on:
   workflow_dispatch:
     inputs:
-      # metricfunc_source_version:
-      #   description: 'Source Version for METRICFUNC'
-      #   required: true
-      #   default: 'release-0.2.1'
-      # metricfunc_target_version:
-      #   description: 'Target Version for METRICFUNC'
-      #   required: true
-      #   default: 'release-0.2.1'
-      # ausf_source_version:
-      #   description: 'Source Version for AUSF'
-      #   required: true
-      #   default: 'release-0.2.1'
-      # ausf_target_version:
-      #   description: 'Target Version for AUSF'
-      #   required: true
-      #   default: 'release-0.2.1'
-      nrf_source_version:
-        description: 'Source Version for NRF'
+      metricfunc_source_version:
+        description: 'Source Version for METRICFUNC'
         required: true
-        default: 'release-0.4.2.rc1'
-      nrf_target_version:
-        description: 'Target Version for NRF'
+        default: 'release-0.2.1'
+      metricfunc_target_version:
+        description: 'Target Version for METRICFUNC'
         required: true
         default: 'release-0.5.0'
+      ausf_source_version:
+        description: 'Source Version for AUSF'
+        required: true
+        default: 'release-0.2.1'
+      ausf_target_version:
+        description: 'Target Version for AUSF'
+        required: true
+        default: 'release-0.5.0'
+      # nrf_source_version:
+      #   description: 'Source Version for NRF'
+      #   required: true
+      #   default: 'release-0.4.2.rc1'
+      # nrf_target_version:
+      #   description: 'Target Version for NRF'
+      #   required: true
+      #   default: 'release-0.5.0'
 
 jobs:
   pull_retag_compare_push:
@@ -62,16 +62,16 @@ jobs:
           # Define associative arrays for source and target versions
           declare -A SOURCE_VERSIONS=(
             
-            # ["metricfunc"]="${{ github.event.inputs.metricfunc_source_version }}"
-            # ["5gc-ausf"]="${{ github.event.inputs.ausf_source_version }}"
-            ["5gc-nrf"]="${{ github.event.inputs.nrf_source_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_source_version }}"
+            ["5gc-ausf"]="${{ github.event.inputs.ausf_source_version }}"
+            # ["5gc-nrf"]="${{ github.event.inputs.nrf_source_version }}"
           )
           
           declare -A TARGET_VERSIONS=(
            
-            # ["metricfunc"]="${{ github.event.inputs.metricfunc_target_version }}"
-            # ["5gc-ausf"]="${{ github.event.inputs.ausf_target_version }}"
-             ["5gc-nrf"]="${{ github.event.inputs.nrf_target_version }}"
+            ["metricfunc"]="${{ github.event.inputs.metricfunc_target_version }}"
+            ["5gc-ausf"]="${{ github.event.inputs.ausf_target_version }}"
+             # ["5gc-nrf"]="${{ github.event.inputs.nrf_target_version }}"
           )
           
           for PACKAGE in "${!SOURCE_VERSIONS[@]}"; do
