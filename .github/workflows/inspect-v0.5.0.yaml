@@ -1,0 +1,45 @@
+name: Compare Docker Images
+on:
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Pull images
+        run: |
+          docker pull ghcr.io/ios-mcn/darpan:0.5.0
+          docker pull ghcr.io/ios-mcn-smo/darpan:1.3.0
+
+      - name: Inspect images
+        run: |
+          docker inspect ghcr.io/ios-mcn/darpan:0.5.0 > img1.json
+          docker inspect ghcr.io/ios-mcn-smo/darpan:1.3.0 > img2.json
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Normalize JSON (sorted)
+        run: |
+          jq -S '.[0]' img1.json > img1_sorted.json
+          jq -S '.[0]' img2.json > img2_sorted.json
+
+      - name: Diff images
+        run: |
+          diff -u img1_sorted.json img2_sorted.json > diff_output.txt || true
+          cat diff_output.txt
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-inspect-diff
+          path: |
+            img1_sorted.json
+            img2_sorted.json
+            diff_output.txt
