@@ -21,6 +21,10 @@ jobs:
         run: |
           docker inspect ghcr.io/ios-mcn/darpan:0.5.0 > img1.json
           docker inspect ghcr.io/ios-mcn-smo/darpan:1.3.0 > img2.json
+          echo "=== IMAGE 1 INSPECT ==="
+          cat img1.json
+          echo "=== IMAGE 2 INSPECT ==="
+          cat img2.json
 
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
@@ -33,6 +37,7 @@ jobs:
       - name: Diff images
         run: |
           diff -u img1_sorted.json img2_sorted.json > diff_output.txt || true
+          echo "=== DIFF RESULT ==="
           cat diff_output.txt
 
       - name: Upload results
