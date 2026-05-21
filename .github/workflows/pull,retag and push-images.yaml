@@ -21,7 +21,7 @@ jobs:
 
       - name: Retag image 
         run: |
-          docker tag ghcr.io/ios-mcn-ran/docker pull ghcr.io/ios-mcn-ran/ran-base-dis:v2026.10.4.randis-pilot.openairinterface5g ghcr.io/ios-mcn-ran/docker pull ghcr.io/ios-mcn-ran/ran-base-dis:v0.4.2.rc1    # Retag the image to a new version
+          docker tag ghcr.io/ios-mcn-ran/ran-base-dis:v2026.10.4.randis-pilot.openairinterface5g   ghcr.io/ios-mcn-ran/ran-base-dis:v0.4.2.rc1    # Retag the image to a new version
 
       - name: Push the new tag to GHCR
         run: |
