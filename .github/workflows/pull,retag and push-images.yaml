@@ -17,7 +17,7 @@ jobs:
 
       - name: Pull the existing image
         run: |
-         docker pull ghcr.io/ios-mcn-ran/docker pull ghcr.io/ios-mcn-ran/ran-base-dis:v2026.10.4.randis-pilot.openairinterface5g    # Pull the existing image from GHCR
+         docker pull ghcr.io/ios-mcn-ran/ran-base-dis:v2026.10.4.randis-pilot.openairinterface5g    # Pull the existing image from GHCR
 
       - name: Retag image 
         run: |
