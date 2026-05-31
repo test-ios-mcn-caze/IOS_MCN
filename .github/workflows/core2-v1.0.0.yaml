@@ -19,14 +19,14 @@ on:
         description: 'Target Version for  upf-epc-pfcpiface'
         required: true
         default: 'release-haswell-1.0.0'
-      bess_build_source_version:
-         description: 'Source Version for bess-build'
-         required: true
-         default: 'release-0.4.2.rc2'
-      bess_build_target_version:
-         description: 'Target Version for bess-build'
-         required: true
-         default: 'release-1.0.0'
+      # bess_build_source_version:
+      #    description: 'Source Version for bess-build'
+      #    required: true
+      #    default: 'release-0.4.2.rc2'
+      # bess_build_target_version:
+      #    description: 'Target Version for bess-build'
+      #    required: true
+      #    default: 'release-1.0.0'
       
       
 
@@ -65,14 +65,14 @@ jobs:
           declare -A SOURCE_VERSIONS=(
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_source_version }}"
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_source_version }}"
-            ["bess_build"]="${{ github.event.inputs.bess_build_source_version }}"
+            # ["bess_build"]="${{ github.event.inputs.bess_build_source_version }}"
             
           )
           
           declare -A TARGET_VERSIONS=(
             ["upf-epc-bess"]="${{ github.event.inputs.upf-epc-bess_target_version }}"
             ["upf-epc-pfcpiface"]="${{ github.event.inputs.upf-epc-pfcpiface_target_version }}"
-            ["bess_build"]="${{ github.event.inputs.bess_build_target_version }}"
+            # ["bess_build"]="${{ github.event.inputs.bess_build_target_version }}"
             
           )
           
