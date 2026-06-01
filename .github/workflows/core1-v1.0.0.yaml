@@ -73,7 +73,7 @@ jobs:
           )
           
           declare -A TARGET_VERSIONS=(
-            ["5gc-amf"]="${{ github.event.inputs.amf_target_version }}"
+            ["5gc-nrf"]="${{ github.event.inputs.nrf_target_version }}"
             # ["5gc-smf"]="${{ github.event.inputs.smf_target_version }}"
             # ["5gc-udm"]="${{ github.event.inputs.udm_target_version }}"
           )
